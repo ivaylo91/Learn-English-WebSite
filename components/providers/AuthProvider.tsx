@@ -6,12 +6,14 @@ import { useAuthStore } from "@/lib/stores/authStore";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const setUser = useAuthStore((s) => s.setUser);
+  const setAuthLoading = useAuthStore((s) => s.setAuthLoading);
 
   useEffect(() => {
     const supabase = createClient();
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      setAuthLoading(false);
     });
 
     const {
@@ -21,7 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [setUser]);
+  }, [setUser, setAuthLoading]);
 
   return <>{children}</>;
 }

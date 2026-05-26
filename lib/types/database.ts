@@ -24,6 +24,7 @@ export interface GrammarLesson {
   level: Level;
   category: string;
   order_index: number;
+  questions: QuizQuestion[];
   created_at: string;
 }
 
@@ -54,6 +55,18 @@ export interface ReadingText {
   topic: string;
   reading_time_minutes: number;
   questions: QuizQuestion[];
+  vocabulary: { en: string; bg: string }[];
+  created_at: string;
+}
+
+export interface UserContentProgress {
+  id: string;
+  user_id: string;
+  content_type: 'listening' | 'reading';
+  content_id: string;
+  score: number;
+  completed: boolean;
+  completed_at: string | null;
   created_at: string;
 }
 
@@ -123,7 +136,7 @@ export type Database = {
       };
       grammar_lessons: {
         Row: GrammarLesson;
-        Insert: Omit<GrammarLesson, 'id' | 'created_at'>;
+        Insert: Omit<GrammarLesson, 'id' | 'created_at'> & { questions?: QuizQuestion[] };
         Update: Partial<Omit<GrammarLesson, 'id' | 'created_at'>>;
       };
       listening_clips: {
