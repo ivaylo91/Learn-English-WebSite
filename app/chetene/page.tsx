@@ -3,6 +3,12 @@ import ModuleHero from '@/components/modules/ModuleHero';
 import Badge from '@/components/ui/Badge';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Четене | Учи Английски',
+  description: 'Текстове на различни нива от A2 до C1 с речник на ключови думи и въпроси за разбиране.',
+};
 
 const levelColor: Record<string, 'green' | 'amber' | 'purple' | 'gray'> = {
   A1: 'green', A2: 'green',

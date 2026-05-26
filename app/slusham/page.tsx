@@ -3,6 +3,12 @@ import ModuleHero from '@/components/modules/ModuleHero';
 import Badge from '@/components/ui/Badge';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Слушане | Учи Английски',
+  description: 'Автентични аудио клипове с транскрипт и въпроси за разбиране на английски.',
+};
 
 const levelColor: Record<string, 'green' | 'amber' | 'purple' | 'gray'> = {
   A1: 'green', A2: 'green',

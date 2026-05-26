@@ -4,6 +4,12 @@ import Badge from '@/components/ui/Badge';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import type { GrammarLesson, UserLessonProgress } from '@/lib/types/database';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Граматика | Учи Английски',
+  description: 'Уроци по английска граматика от A1 до C1 с обяснения на български и интерактивни упражнения.',
+};
 
 const levelColor: Record<string, 'green' | 'amber' | 'purple' | 'gray'> = {
   A1: 'green', A2: 'green',

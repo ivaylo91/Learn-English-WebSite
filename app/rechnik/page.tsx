@@ -3,6 +3,12 @@ import ModuleHero from '@/components/modules/ModuleHero';
 import WordListClient from '@/components/vocabulary/WordListClient';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Речник | Учи Английски',
+  description: 'Над 2 000 думи с флаш карти и умно SM-2 повторение по теми и ниво.',
+};
 
 export default async function RechnikPage() {
   const supabase = await createClient();

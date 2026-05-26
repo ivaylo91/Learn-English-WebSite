@@ -5,8 +5,20 @@ import AudioPlayer from '@/components/listening/AudioPlayer';
 import Quiz from '@/components/grammar/Quiz';
 import Badge from '@/components/ui/Badge';
 import { ChevronLeft, Clock, BarChart2 } from 'lucide-react';
+import type { Metadata } from 'next';
 
 type Props = { params: Promise<{ id: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id }   = await params;
+  const supabase = await createClient();
+  const { data } = await supabase.from('listening_clips').select('title, level, topic').eq('id', id).single();
+  if (!data) return { title: 'Клип | Слушане' };
+  return {
+    title: `${data.title} (${data.level}) | Слушане`,
+    description: `Аудио клип на ниво ${data.level} по темата „${data.topic}". Транскрипт и въпроси за разбиране.`,
+  };
+}
 
 const levelColor: Record<string, 'green' | 'amber' | 'purple' | 'gray'> = {
   A1: 'green', A2: 'green',

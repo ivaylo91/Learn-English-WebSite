@@ -6,8 +6,20 @@ import { createClient } from '@/lib/supabase/server';
 import Quiz from '@/components/grammar/Quiz';
 import Badge from '@/components/ui/Badge';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import type { Metadata } from 'next';
 
 type Props = { params: Promise<{ slug: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase  = await createClient();
+  const { data }  = await supabase.from('grammar_lessons').select('title, level').eq('slug', slug).single();
+  if (!data) return { title: 'Урок | Граматика' };
+  return {
+    title: `${data.title} (${data.level}) | Граматика`,
+    description: `Урок по английска граматика: ${data.title}. Обяснение на български и интерактивно упражнение.`,
+  };
+}
 
 const levelColor: Record<string, 'green' | 'amber' | 'purple' | 'gray'> = {
   A1: 'green', A2: 'green',

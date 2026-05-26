@@ -20,8 +20,18 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Учи Английски",
-  description: "Платформа за изучаване на английски език с упражнения, речник и граматика.",
+  title: {
+    default:  'Учи Английски',
+    template: '%s | Учи Английски',
+  },
+  description:
+    'Безплатна платформа за изучаване на английски с речник, граматика, слушане и четене — всичко на български.',
+  openGraph: {
+    siteName: 'Учи Английски',
+    locale:   'bg_BG',
+    type:     'website',
+  },
+  metadataBase: new URL('https://uchi-angliyski.vercel.app'),
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

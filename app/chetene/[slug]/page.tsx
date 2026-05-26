@@ -6,8 +6,20 @@ import { createClient } from '@/lib/supabase/server';
 import Quiz from '@/components/grammar/Quiz';
 import Badge from '@/components/ui/Badge';
 import { ChevronLeft, Clock, BookOpen } from 'lucide-react';
+import type { Metadata } from 'next';
 
 type Props = { params: Promise<{ slug: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase  = await createClient();
+  const { data }  = await supabase.from('reading_texts').select('title, level, topic').eq('slug', slug).single();
+  if (!data) return { title: 'Текст | Четене' };
+  return {
+    title: `${data.title} (${data.level}) | Четене`,
+    description: `Текст за четене на ниво ${data.level} по темата „${data.topic}". Речник и въпроси за разбиране.`,
+  };
+}
 
 const levelColor: Record<string, 'green' | 'amber' | 'purple' | 'gray'> = {
   A1: 'green', A2: 'green',
