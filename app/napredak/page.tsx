@@ -35,11 +35,11 @@ const moduleLabel = {
   reading:    'Четене',
 } as const;
 
-const moduleColor = {
-  vocabulary: { color: 'text-indigo-600', bg: 'bg-indigo-100' },
-  grammar:    { color: 'text-emerald-600', bg: 'bg-emerald-100' },
-  listening:  { color: 'text-purple-600', bg: 'bg-purple-100' },
-  reading:    { color: 'text-amber-600', bg: 'bg-amber-100' },
+const moduleTheme = {
+  vocabulary: { bg: 'var(--coral-soft)', color: 'var(--coral-ink)', bar: 'var(--coral)' },
+  grammar:    { bg: 'var(--lavender)',   color: 'var(--lav-ink)',   bar: 'var(--lav-ink)' },
+  listening:  { bg: 'var(--sky)',        color: 'var(--sky-ink)',   bar: 'var(--sky-ink)' },
+  reading:    { bg: 'var(--sage)',       color: 'var(--sage-ink)',  bar: 'var(--sage-ink)' },
 } as const;
 
 const actionLabel: Record<string, string> = {
@@ -95,33 +95,35 @@ export default async function NapredakPage() {
   const readingTotal   = readingTotalRes.count ?? 0;
   const readingDone    = (readingProgressRes.data ?? []).filter(r => r.completed).length;
   const activity       = activityRes.data ?? [];
+  const totalDone      = grammarDone + listeningDone + readingDone;
 
-  const totalDone = grammarDone + listeningDone + readingDone;
+  const kpis = [
+    { label: 'Дни поред',  value: String(profile?.streak ?? 0), icon: Flame,      bg: 'var(--peach)',       color: 'var(--coral-ink)' },
+    { label: 'Точки общо', value: String(profile?.xp ?? 0),     icon: Trophy,     bg: 'var(--butter)',      color: 'var(--butter-ink)' },
+    { label: 'Завършени',  value: String(totalDone),             icon: Target,     bg: 'var(--lavender)',    color: 'var(--lav-ink)' },
+    { label: 'Ниво',       value: profile?.level ?? '—',         icon: TrendingUp, bg: 'var(--sage)',        color: 'var(--sage-ink)' },
+  ];
 
   const moduleStats = [
     {
-      label: 'Речник',    icon: BookMarked,
+      label: 'Речник',    icon: BookMarked, module: 'vocabulary' as const,
       done: vocabKnown,   total: Math.max(vocabTotal, 1),
       subtitle: vocabStudied > 0 ? `${vocabKnown} от ${vocabStudied} в списъка` : 'Добави думи за начало',
-      color: 'text-indigo-600',  bg: 'bg-indigo-50',  bar: 'bg-indigo-500',
     },
     {
-      label: 'Граматика', icon: PenLine,
+      label: 'Граматика', icon: PenLine,    module: 'grammar' as const,
       done: grammarDone,  total: Math.max(grammarTotal, 1),
       subtitle: `${grammarDone} от ${grammarTotal} урока`,
-      color: 'text-emerald-600', bg: 'bg-emerald-50', bar: 'bg-emerald-500',
     },
     {
-      label: 'Слушане',   icon: Headphones,
+      label: 'Слушане',   icon: Headphones, module: 'listening' as const,
       done: listeningDone, total: Math.max(listeningTotal, 1),
       subtitle: `${listeningDone} от ${listeningTotal} клипа`,
-      color: 'text-purple-600',  bg: 'bg-purple-50',  bar: 'bg-purple-500',
     },
     {
-      label: 'Четене',    icon: BookOpen,
+      label: 'Четене',    icon: BookOpen,   module: 'reading' as const,
       done: readingDone,  total: Math.max(readingTotal, 1),
       subtitle: `${readingDone} от ${readingTotal} текста`,
-      color: 'text-amber-600',   bg: 'bg-amber-50',   bar: 'bg-amber-500',
     },
   ];
 
@@ -129,50 +131,67 @@ export default async function NapredakPage() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
 
       <div className="mb-10">
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-1">Моят напредък</h1>
-        <p className="text-gray-500">Проследявай обучението си и поддържай темпото.</p>
+        <h1 className="text-3xl font-extrabold mb-1" style={{ fontFamily: 'var(--font-display)', color: 'var(--ink)' }}>
+          Моят напредък
+        </h1>
+        <p style={{ color: 'var(--muted)' }}>Проследявай обучението си и поддържай темпото.</p>
       </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
-        {[
-          { label: 'Дни поред',  value: String(profile?.streak ?? 0),   icon: Flame,      color: 'text-orange-500', bg: 'bg-orange-50'  },
-          { label: 'Точки общо', value: String(profile?.xp ?? 0),        icon: Trophy,     color: 'text-amber-600',  bg: 'bg-amber-50'   },
-          { label: 'Завършени',  value: String(totalDone),               icon: Target,     color: 'text-indigo-600', bg: 'bg-indigo-50'  },
-          { label: 'Ниво',       value: profile?.level ?? '—',           icon: TrendingUp, color: 'text-emerald-600',bg: 'bg-emerald-50' },
-        ].map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm text-center">
-            <div className={`w-10 h-10 ${bg} rounded-xl flex items-center justify-center mx-auto mb-3`}>
-              <Icon className={`w-5 h-5 ${color}`} />
+        {kpis.map(({ label, value, icon: Icon, bg, color }) => (
+          <div
+            key={label}
+            className="rounded-2xl p-5 text-center"
+            style={{ background: 'var(--surface)', border: '1px solid var(--line)', boxShadow: 'var(--shadow-sm)' }}
+          >
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-3"
+              style={{ background: bg }}
+            >
+              <Icon className="w-5 h-5" style={{ color }} />
             </div>
-            <p className="text-2xl font-extrabold text-gray-900">{value}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{label}</p>
+            <p className="text-2xl font-extrabold" style={{ fontFamily: 'var(--font-display)', color: 'var(--ink)' }}>
+              {value}
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{label}</p>
           </div>
         ))}
       </div>
 
       {/* Module progress */}
       <section className="mb-10">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Прогрес по модул</h2>
+        <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--ink)' }}>Прогрес по модул</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {moduleStats.map(({ label, icon: Icon, done, total, subtitle, color, bg, bar }) => {
+          {moduleStats.map(({ label, icon: Icon, done, total, subtitle, module }) => {
             const pct = Math.round((done / total) * 100);
+            const theme = moduleTheme[module];
             return (
-              <div key={label} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+              <div
+                key={label}
+                className="rounded-2xl p-5"
+                style={{ background: 'var(--surface)', border: '1px solid var(--line)', boxShadow: 'var(--shadow-sm)' }}
+              >
                 <div className="flex items-center gap-3 mb-4">
-                  <div className={`w-9 h-9 ${bg} rounded-lg flex items-center justify-center`}>
-                    <Icon className={`w-5 h-5 ${color}`} />
+                  <div
+                    className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                    style={{ background: theme.bg }}
+                  >
+                    <Icon className="w-5 h-5" style={{ color: theme.color }} />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <span className="font-semibold text-sm text-gray-900">{label}</span>
-                      <Badge color="gray">{pct}%</Badge>
+                      <span className="font-semibold text-sm" style={{ color: 'var(--ink)' }}>{label}</span>
+                      <Badge color="sage">{pct}%</Badge>
                     </div>
-                    <p className="text-xs text-gray-400">{subtitle}</p>
+                    <p className="text-xs" style={{ color: 'var(--muted)' }}>{subtitle}</p>
                   </div>
                 </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className={`h-full ${bar} rounded-full transition-all`} style={{ width: `${pct}%` }} />
+                <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--line)' }}>
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{ width: `${pct}%`, background: theme.bar }}
+                  />
                 </div>
               </div>
             );
@@ -182,30 +201,45 @@ export default async function NapredakPage() {
 
       {/* Recent activity */}
       <section>
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Последна активност</h2>
+        <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--ink)' }}>Последна активност</h2>
         {activity.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center text-gray-400 text-sm">
+          <div
+            className="rounded-2xl p-12 text-center text-sm"
+            style={{ background: 'var(--surface)', border: '1px solid var(--line)', color: 'var(--muted)' }}
+          >
             Все още няма активност — започни да учиш!
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-50">
+          <div
+            className="rounded-2xl overflow-hidden"
+            style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}
+          >
             {activity.map((a, i) => {
               const mod = a.module as keyof typeof moduleIcon;
               const Icon = moduleIcon[mod] ?? BookMarked;
-              const { color, bg } = moduleColor[mod] ?? { color: 'text-gray-600', bg: 'bg-gray-100' };
+              const theme = moduleTheme[mod] ?? moduleTheme.vocabulary;
               const label = `${moduleLabel[mod] ?? mod} — ${actionLabel[a.action] ?? a.action}`;
               return (
-                <div key={i} className="flex items-center gap-4 p-4">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${bg} ${color}`}>
+                <div
+                  key={i}
+                  className="flex items-center gap-4 p-4"
+                  style={{ borderBottom: i < activity.length - 1 ? '1px solid var(--line)' : undefined }}
+                >
+                  <div
+                    className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                    style={{ background: theme.bg, color: theme.color }}
+                  >
                     <Icon className="w-4 h-4" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900">{label}</p>
+                    <p className="text-sm font-medium" style={{ color: 'var(--ink)' }}>{label}</p>
                     {a.xp_gained > 0 && (
-                      <p className="text-xs text-gray-500">+{a.xp_gained} XP</p>
+                      <p className="text-xs" style={{ color: 'var(--muted)' }}>+{a.xp_gained} XP</p>
                     )}
                   </div>
-                  <span className="text-xs text-gray-400 shrink-0">{relativeTime(a.created_at)}</span>
+                  <span className="text-xs shrink-0" style={{ color: 'var(--muted)' }}>
+                    {relativeTime(a.created_at)}
+                  </span>
                 </div>
               );
             })}

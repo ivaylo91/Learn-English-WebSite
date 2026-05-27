@@ -20,10 +20,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-const levelColor: Record<string, 'green' | 'amber' | 'purple' | 'gray'> = {
-  A1: 'green', A2: 'green',
-  B1: 'amber', B2: 'amber',
-  C1: 'purple', C2: 'purple',
+const levelBadge: Record<string, 'sage' | 'sky' | 'lavender'> = {
+  A1: 'sage', A2: 'sage',
+  B1: 'sky',  B2: 'sky',
+  C1: 'lavender', C2: 'lavender',
 };
 
 function formatDuration(secs: number) {
@@ -36,7 +36,6 @@ function formatDuration(secs: number) {
 export default async function ListeningClipPage({ params }: Props) {
   const { id }    = await params;
   const supabase  = await createClient();
-
   const { data: { user } } = await supabase.auth.getUser();
 
   const { data: clip } = await supabase
@@ -90,7 +89,8 @@ export default async function ListeningClipPage({ params }: Props) {
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
       <Link
         href="/slusham"
-        className="inline-flex items-center gap-1.5 text-sm text-purple-600 hover:underline mb-6"
+        className="inline-flex items-center gap-1.5 text-sm mb-6 transition-colors hover:underline"
+        style={{ color: 'var(--sky-ink)' }}
       >
         <ChevronLeft className="w-4 h-4" />
         Обратно към слушане
@@ -98,16 +98,21 @@ export default async function ListeningClipPage({ params }: Props) {
 
       <div className="mb-8">
         <div className="flex flex-wrap items-center gap-2 mb-3">
-          <Badge color={levelColor[clip.level] ?? 'gray'}>{clip.level}</Badge>
-          <Badge color="purple">{clip.topic}</Badge>
+          <Badge color={levelBadge[clip.level] ?? 'sage'}>{clip.level}</Badge>
+          <Badge color="sky">{clip.topic}</Badge>
           {progress?.completed && (
-            <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+            <span
+              className="text-xs font-semibold px-2 py-0.5 rounded-full"
+              style={{ background: 'var(--sage)', color: 'var(--sage-ink)' }}
+            >
               Завършен ✓
             </span>
           )}
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-3">{clip.title}</h1>
-        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
+        <h1 className="text-3xl font-bold tracking-tight mb-3" style={{ color: 'var(--ink)' }}>
+          {clip.title}
+        </h1>
+        <div className="flex flex-wrap items-center gap-4 text-sm" style={{ color: 'var(--muted)' }}>
           {duration && (
             <span className="flex items-center gap-1.5">
               <Clock className="w-4 h-4" />{duration}
@@ -119,7 +124,10 @@ export default async function ListeningClipPage({ params }: Props) {
             </span>
           )}
           {progress?.score !== undefined && (
-            <span>Резултат: <span className="font-semibold text-gray-600">{progress.score}%</span></span>
+            <span>
+              Резултат:{' '}
+              <span className="font-semibold" style={{ color: 'var(--ink-2)' }}>{progress.score}%</span>
+            </span>
           )}
         </div>
       </div>
@@ -130,7 +138,7 @@ export default async function ListeningClipPage({ params }: Props) {
 
       {clip.questions?.length > 0 && (
         <div>
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Въпроси за разбиране</h2>
+          <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--ink)' }}>Въпроси за разбиране</h2>
           <Quiz
             questions={clip.questions}
             previousScore={progress?.score}

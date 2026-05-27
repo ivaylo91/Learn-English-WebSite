@@ -110,6 +110,51 @@ h1, h2, h3, h4, h5 {
   border-radius: 6px;
 }
 
+/* ── Prose warm theme (for Markdown content) ── */
+.prose-warm {
+  --tw-prose-body:          var(--ink-2);
+  --tw-prose-headings:      var(--ink);
+  --tw-prose-lead:          var(--ink-2);
+  --tw-prose-links:         var(--coral);
+  --tw-prose-bold:          var(--ink);
+  --tw-prose-counters:      var(--muted);
+  --tw-prose-bullets:       var(--muted);
+  --tw-prose-hr:            var(--line);
+  --tw-prose-quotes:        var(--ink-2);
+  --tw-prose-quote-borders: var(--line-2);
+  --tw-prose-captions:      var(--muted);
+  --tw-prose-code:          var(--coral-ink);
+  --tw-prose-pre-code:      var(--ink);
+  --tw-prose-pre-bg:        var(--bg-2);
+  --tw-prose-th-borders:    var(--line);
+  --tw-prose-td-borders:    var(--line);
+}
+.prose-warm :where(th):not(:where([class~="not-prose"] *)) {
+  background: var(--bg-2);
+}
+.prose-warm :where(blockquote):not(:where([class~="not-prose"] *)) {
+  background: var(--coral-soft);
+  border-radius: 0 10px 10px 0;
+  padding-block: 0.25rem;
+}
+.prose-warm :where(code):not(:where([class~="not-prose"] *))::before,
+.prose-warm :where(code):not(:where([class~="not-prose"] *))::after {
+  content: none;
+}
+.prose-warm :where(code):not(:where([class~="not-prose"] *)) {
+  background: var(--coral-soft);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  font-size: 0.88em;
+}
+
+/* ── Quiz option hover (avoids JS hover state) ── */
+.quiz-opt:not(:disabled):hover {
+  border-color: var(--coral) !important;
+  background: var(--coral-soft) !important;
+  color: var(--coral-ink) !important;
+}
+
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

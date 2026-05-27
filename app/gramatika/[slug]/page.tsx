@@ -21,10 +21,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-const levelColor: Record<string, 'green' | 'amber' | 'purple' | 'gray'> = {
-  A1: 'green', A2: 'green',
-  B1: 'amber', B2: 'amber',
-  C1: 'purple', C2: 'purple',
+const levelBadge: Record<string, 'sage' | 'sky' | 'lavender'> = {
+  A1: 'sage', A2: 'sage',
+  B1: 'sky',  B2: 'sky',
+  C1: 'lavender', C2: 'lavender',
 };
 
 export default async function LessonPage({ params }: Props) {
@@ -63,7 +63,6 @@ export default async function LessonPage({ params }: Props) {
   const prevLesson = siblings[currentIdx - 1] ?? null;
   const nextLesson = siblings[currentIdx + 1] ?? null;
 
-  // Server action — saves grammar lesson score + XP
   async function saveScore(score: number) {
     'use server';
     if (!user) return;
@@ -92,52 +91,48 @@ export default async function LessonPage({ params }: Props) {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
-        <Link href="/gramatika" className="hover:text-indigo-600 transition-colors">
+      <div className="flex items-center gap-2 text-sm mb-6" style={{ color: 'var(--muted)' }}>
+        <Link href="/gramatika" className="transition-colors hover:underline" style={{ color: 'var(--lav-ink)' }}>
           Граматика
         </Link>
         <ChevronRight className="w-3.5 h-3.5" />
-        <span className="text-gray-600 font-medium truncate">{lesson.title}</span>
+        <span style={{ color: 'var(--ink-2)' }} className="font-medium truncate">{lesson.title}</span>
       </div>
 
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-3">
-          <Badge color={levelColor[lesson.level] ?? 'gray'}>{lesson.level}</Badge>
-          <span className="text-xs text-gray-400 uppercase tracking-wide">{lesson.category}</span>
+          <Badge color={levelBadge[lesson.level] ?? 'sage'}>{lesson.level}</Badge>
+          <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--muted)' }}>{lesson.category}</span>
           {progress?.completed && (
-            <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+            <span
+              className="text-xs font-semibold px-2 py-0.5 rounded-full"
+              style={{ background: 'var(--sage)', color: 'var(--sage-ink)' }}
+            >
               Завършен ✓
             </span>
           )}
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{lesson.title}</h1>
+        <h1 className="text-3xl font-bold tracking-tight" style={{ color: 'var(--ink)' }}>{lesson.title}</h1>
         {progress?.score !== undefined && (
-          <p className="text-sm text-gray-400 mt-2">
-            Резултат: <span className="font-semibold text-gray-600">{progress.score}%</span>
+          <p className="text-sm mt-2" style={{ color: 'var(--muted)' }}>
+            Резултат: <span className="font-semibold" style={{ color: 'var(--ink-2)' }}>{progress.score}%</span>
           </p>
         )}
       </div>
 
       {/* Markdown content */}
       {lesson.content_md ? (
-        <div className="prose prose-gray prose-sm sm:prose-base max-w-none mb-10
-          prose-headings:font-bold prose-headings:text-gray-900 prose-headings:tracking-tight
-          prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-3
-          prose-h3:text-base prose-h3:mt-6 prose-h3:mb-2
-          prose-p:text-gray-600 prose-p:leading-relaxed
-          prose-strong:text-gray-900 prose-strong:font-semibold
-          prose-table:text-sm prose-th:text-gray-700 prose-th:font-semibold prose-th:bg-gray-50
-          prose-td:text-gray-600 prose-tr:border-gray-100
-          prose-blockquote:border-l-indigo-400 prose-blockquote:text-gray-500 prose-blockquote:bg-indigo-50 prose-blockquote:rounded-r-xl prose-blockquote:py-1
-          prose-code:text-indigo-600 prose-code:bg-indigo-50 prose-code:px-1 prose-code:rounded
-          prose-hr:border-gray-100">
+        <div className="prose prose-sm sm:prose-base max-w-none prose-warm mb-10">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {lesson.content_md}
           </ReactMarkdown>
         </div>
       ) : (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-10 text-sm text-amber-700">
+        <div
+          className="rounded-2xl p-6 mb-10 text-sm"
+          style={{ background: 'var(--butter)', border: '1px solid #e8d8a8', color: 'var(--butter-ink)' }}
+        >
           Съдържанието на този урок скоро ще бъде добавено.
         </div>
       )}
@@ -145,7 +140,7 @@ export default async function LessonPage({ params }: Props) {
       {/* Quiz */}
       {lesson.questions?.length > 0 && (
         <div className="mb-10">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Упражнение</h2>
+          <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--ink)' }}>Упражнение</h2>
           <Quiz
             questions={lesson.questions}
             previousScore={progress?.score}
@@ -155,11 +150,15 @@ export default async function LessonPage({ params }: Props) {
       )}
 
       {/* Prev / Next */}
-      <div className="flex items-center justify-between gap-4 pt-6 border-t border-gray-100">
+      <div
+        className="flex items-center justify-between gap-4 pt-6"
+        style={{ borderTop: '1px solid var(--line)' }}
+      >
         {prevLesson ? (
           <Link
             href={`/gramatika/${prevLesson.slug}`}
-            className="flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 transition-colors group"
+            className="flex items-center gap-2 text-sm transition-colors group"
+            style={{ color: 'var(--muted)' }}
           >
             <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
             <span className="truncate max-w-[200px]">{prevLesson.title}</span>
@@ -168,7 +167,8 @@ export default async function LessonPage({ params }: Props) {
         {nextLesson ? (
           <Link
             href={`/gramatika/${nextLesson.slug}`}
-            className="flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 transition-colors group text-right"
+            className="flex items-center gap-2 text-sm transition-colors group text-right"
+            style={{ color: 'var(--muted)' }}
           >
             <span className="truncate max-w-[200px]">{nextLesson.title}</span>
             <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />

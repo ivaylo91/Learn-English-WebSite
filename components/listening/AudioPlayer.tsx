@@ -86,15 +86,21 @@ export default function AudioPlayer({ audioUrl, transcript }: AudioPlayerProps) 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
-    <div className="bg-white rounded-3xl border border-purple-100 shadow-[0_8px_30px_-8px_rgba(147,51,234,0.12)] overflow-hidden">
+    <div
+      className="rounded-3xl overflow-hidden"
+      style={{ background: 'var(--surface)', border: '1px solid var(--line)', boxShadow: 'var(--shadow-md)' }}
+    >
       {audioUrl && <audio ref={audioRef} src={audioUrl} preload="metadata" />}
 
       {/* Player UI */}
       <div className="p-6">
         {!hasAudio || audioError ? (
-          <div className="flex items-center gap-3 p-4 bg-amber-50 rounded-2xl border border-amber-100 mb-4">
-            <Volume2 className="w-5 h-5 text-amber-500 shrink-0" />
-            <p className="text-sm text-amber-700">
+          <div
+            className="flex items-center gap-3 p-4 rounded-2xl mb-4"
+            style={{ background: 'var(--butter)', border: '1px solid #e8d8a8' }}
+          >
+            <Volume2 className="w-5 h-5 shrink-0" style={{ color: 'var(--butter-ink)' }} />
+            <p className="text-sm" style={{ color: 'var(--butter-ink)' }}>
               {audioError ? 'Аудиото не може да се зареди.' : 'Аудио файлът скоро ще бъде наличен.'}
               {' '}Транскриптът е достъпен по-долу.
             </p>
@@ -105,7 +111,8 @@ export default function AudioPlayer({ audioUrl, transcript }: AudioPlayerProps) 
             <div className="flex items-center gap-4 mb-5">
               <button
                 onClick={restart}
-                className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center hover:bg-purple-100 transition-colors cursor-pointer"
+                className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors cursor-pointer"
+                style={{ background: 'var(--sky)', color: 'var(--sky-ink)' }}
                 title="Начало"
               >
                 <RotateCcw className="w-4 h-4" />
@@ -113,7 +120,8 @@ export default function AudioPlayer({ audioUrl, transcript }: AudioPlayerProps) 
 
               <button
                 onClick={togglePlay}
-                className="w-14 h-14 rounded-2xl bg-purple-600 text-white flex items-center justify-center shadow-lg shadow-purple-200 hover:bg-purple-700 active:scale-95 transition-all cursor-pointer"
+                className="w-14 h-14 rounded-2xl flex items-center justify-center text-white active:scale-95 transition-all cursor-pointer"
+                style={{ background: 'var(--sky-ink)', boxShadow: '0 8px 20px -6px rgba(31,77,119,.4)' }}
               >
                 {playing
                   ? <Pause className="w-6 h-6" />
@@ -126,11 +134,12 @@ export default function AudioPlayer({ audioUrl, transcript }: AudioPlayerProps) 
                   <button
                     key={s}
                     onClick={() => changeSpeed(s)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                    className="px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                    style={
                       speed === s
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                    }`}
+                        ? { background: 'var(--sky-ink)', color: '#fff' }
+                        : { background: 'var(--bg-2)', color: 'var(--muted)' }
+                    }
                   >
                     {s}×
                   </button>
@@ -140,17 +149,18 @@ export default function AudioPlayer({ audioUrl, transcript }: AudioPlayerProps) 
 
             {/* Progress bar */}
             <div
-              className="h-2 bg-gray-100 rounded-full cursor-pointer overflow-hidden mb-2"
+              className="h-2 rounded-full cursor-pointer overflow-hidden mb-2"
+              style={{ background: 'var(--bg-2)' }}
               onClick={seek}
             >
               <div
-                className="h-full bg-purple-500 rounded-full transition-none"
-                style={{ width: `${progress}%` }}
+                className="h-full rounded-full transition-none"
+                style={{ width: `${progress}%`, background: 'var(--sky-ink)' }}
               />
             </div>
 
             {/* Time */}
-            <div className="flex justify-between text-xs text-gray-400 tabular-nums">
+            <div className="flex justify-between text-xs tabular-nums" style={{ color: 'var(--muted)' }}>
               <span>{formatTime(currentTime)}</span>
               <span>{formatTime(duration)}</span>
             </div>
@@ -159,20 +169,28 @@ export default function AudioPlayer({ audioUrl, transcript }: AudioPlayerProps) 
       </div>
 
       {/* Transcript toggle */}
-      <div className="border-t border-gray-50">
+      <div style={{ borderTop: '1px solid var(--line)' }}>
         <button
           onClick={() => setShowTranscript(t => !t)}
-          className="w-full flex items-center justify-between px-6 py-3.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+          className="w-full flex items-center justify-between px-6 py-3.5 text-sm font-semibold transition-colors cursor-pointer"
+          style={{ color: 'var(--ink-2)' }}
         >
           Транскрипт
           {showTranscript
-            ? <ChevronUp   className="w-4 h-4 text-gray-400" />
-            : <ChevronDown className="w-4 h-4 text-gray-400" />
+            ? <ChevronUp   className="w-4 h-4" style={{ color: 'var(--muted)' }} />
+            : <ChevronDown className="w-4 h-4" style={{ color: 'var(--muted)' }} />
           }
         </button>
         {showTranscript && (
           <div className="px-6 pb-6">
-            <pre className="whitespace-pre-wrap text-sm text-gray-600 leading-relaxed font-sans bg-gray-50 rounded-2xl p-5 border border-gray-100">
+            <pre
+              className="whitespace-pre-wrap text-sm leading-relaxed font-sans rounded-2xl p-5"
+              style={{
+                color: 'var(--ink-2)',
+                background: 'var(--bg-2)',
+                border: '1px solid var(--line)',
+              }}
+            >
               {transcript.trim()}
             </pre>
           </div>

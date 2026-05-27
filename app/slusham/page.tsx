@@ -10,10 +10,10 @@ export const metadata: Metadata = {
   description: 'Автентични аудио клипове с транскрипт и въпроси за разбиране на английски.',
 };
 
-const levelColor: Record<string, 'green' | 'amber' | 'purple' | 'gray'> = {
-  A1: 'green', A2: 'green',
-  B1: 'amber', B2: 'amber',
-  C1: 'purple', C2: 'purple',
+const levelBadge: Record<string, 'sage' | 'sky' | 'lavender'> = {
+  A1: 'sage', A2: 'sage',
+  B1: 'sky',  B2: 'sky',
+  C1: 'lavender', C2: 'lavender',
 };
 
 function formatDuration(secs: number) {
@@ -25,7 +25,6 @@ function formatDuration(secs: number) {
 
 export default async function SlushamPage() {
   const supabase = await createClient();
-
   const { data: { user } } = await supabase.auth.getUser();
 
   const [clipsRes, progressRes] = await Promise.all([
@@ -57,14 +56,14 @@ export default async function SlushamPage() {
         bg="bg-purple-50"
         iconColor="text-purple-600"
         stats={[
-          { label: 'Клипа',       value: `${clips.length}` },
-          { label: 'Завършени',   value: `${completedCount}` },
-          { label: 'Минути',      value: `${totalMinutes}` },
+          { label: 'Клипа',     value: `${clips.length}` },
+          { label: 'Завършени', value: `${completedCount}` },
+          { label: 'Минути',    value: `${totalMinutes}` },
         ]}
       />
 
       {clips.length === 0 ? (
-        <div className="py-16 text-center text-gray-400 text-sm">
+        <div className="py-16 text-center text-sm" style={{ color: 'var(--muted)' }}>
           Аудио клиповете скоро ще бъдат достъпни.
         </div>
       ) : (
@@ -78,22 +77,34 @@ export default async function SlushamPage() {
               <Link
                 key={clip.id}
                 href={`/slusham/${clip.id}`}
-                className="group bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:border-purple-200 hover:shadow-[0_4px_20px_-4px_rgba(147,51,234,0.12)] hover:-translate-y-0.5 transition-all duration-200"
+                className="group rounded-2xl p-5 transition-all duration-200 hover:-translate-y-0.5"
+                style={{
+                  background: 'var(--surface)',
+                  border: '1px solid var(--line)',
+                  boxShadow: 'var(--shadow-sm)',
+                }}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`shrink-0 w-12 h-12 rounded-xl flex items-center justify-center shadow-sm ${done ? 'bg-green-100' : 'bg-purple-600'}`}>
+                  <div
+                    className="shrink-0 w-12 h-12 rounded-xl flex items-center justify-center"
+                    style={
+                      done
+                        ? { background: 'var(--sage)', color: 'var(--sage-ink)' }
+                        : { background: 'var(--sky-ink)', color: '#fff' }
+                    }
+                  >
                     {done
-                      ? <CheckCircle2 className="w-5 h-5 text-green-600" />
-                      : <Headphones  className="w-5 h-5 text-white" />
+                      ? <CheckCircle2 className="w-5 h-5" />
+                      : <Headphones   className="w-5 h-5" />
                     }
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <h3 className="font-bold text-gray-900 text-sm">{clip.title}</h3>
-                      <Badge color={levelColor[clip.level] ?? 'gray'}>{clip.level}</Badge>
+                      <h3 className="font-bold text-sm" style={{ color: 'var(--ink)' }}>{clip.title}</h3>
+                      <Badge color={levelBadge[clip.level] ?? 'sage'}>{clip.level}</Badge>
                     </div>
-                    <Badge color="gray">{clip.topic}</Badge>
-                    <div className="flex flex-wrap items-center gap-3 mt-3 text-xs text-gray-400">
+                    <Badge color="sky">{clip.topic}</Badge>
+                    <div className="flex flex-wrap items-center gap-3 mt-3 text-xs" style={{ color: 'var(--muted)' }}>
                       {duration && (
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />{duration}
@@ -105,7 +116,9 @@ export default async function SlushamPage() {
                         </span>
                       )}
                       {p?.score !== undefined && (
-                        <span className="font-semibold text-gray-500 tabular-nums">{p.score}%</span>
+                        <span className="font-semibold tabular-nums" style={{ color: 'var(--ink-2)' }}>
+                          {p.score}%
+                        </span>
                       )}
                     </div>
                   </div>
@@ -116,8 +129,11 @@ export default async function SlushamPage() {
                   {Array.from({ length: 36 }).map((_, i) => (
                     <div
                       key={i}
-                      className={`flex-1 rounded-full transition-colors ${done ? 'bg-green-200' : 'bg-purple-100 group-hover:bg-purple-200'}`}
-                      style={{ height: `${18 + Math.sin(i * 0.9) * 10}px` }}
+                      className="flex-1 rounded-full transition-colors"
+                      style={{
+                        height: `${18 + Math.sin(i * 0.9) * 10}px`,
+                        background: done ? 'var(--sage)' : 'var(--sky)',
+                      }}
                     />
                   ))}
                 </div>
