@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { BookOpen } from "lucide-react";
 
 const links = {
   "Модули": [
@@ -21,18 +20,26 @@ const links = {
 
 export default function Footer() {
   return (
-    <footer className="bg-white border-t border-gray-100 mt-16">
+    <footer className="mt-16" style={{ background: "var(--bg-2)", borderTop: "1px solid var(--line)" }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-10">
           {/* Brand */}
           <div className="col-span-2 sm:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                <BookOpen className="w-4 h-4 text-white" />
+              <div
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold text-base"
+                style={{ background: "var(--coral)", fontFamily: "var(--font-display)" }}
+              >
+                У
               </div>
-              <span className="font-bold text-gray-900 text-sm">Учи Английски</span>
+              <span
+                className="font-semibold text-sm"
+                style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}
+              >
+                Учи Английски
+              </span>
             </Link>
-            <p className="text-xs text-gray-400 leading-relaxed max-w-[180px]">
+            <p className="text-xs leading-relaxed max-w-[180px]" style={{ color: "var(--muted)" }}>
               Безплатна платформа за учене на английски с български интерфейс.
             </p>
           </div>
@@ -40,7 +47,10 @@ export default function Footer() {
           {/* Links */}
           {Object.entries(links).map(([group, items]) => (
             <div key={group}>
-              <p className="text-xs font-semibold text-gray-900 uppercase tracking-widest mb-3">
+              <p
+                className="text-xs font-semibold uppercase tracking-widest mb-3"
+                style={{ color: "var(--ink)" }}
+              >
                 {group}
               </p>
               <ul className="flex flex-col gap-2">
@@ -48,7 +58,8 @@ export default function Footer() {
                   <li key={item.href}>
                     <Link
                       href={item.href}
-                      className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+                      className="text-sm transition-colors"
+                      style={{ color: "var(--muted)" }}
                     >
                       {item.label}
                     </Link>
@@ -59,12 +70,12 @@ export default function Footer() {
           ))}
         </div>
 
-        <div className="border-t border-gray-100 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-gray-400">
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3" style={{ borderTop: "1px solid var(--line)" }}>
+          <p className="text-xs" style={{ color: "var(--muted)" }}>
             © {new Date().getFullYear()} Учи Английски. Всички права запазени.
           </p>
-          <p className="text-xs text-gray-400">
-            Направено с ❤️ за всички, учещи английски
+          <p className="text-xs" style={{ color: "var(--muted)" }}>
+            Направено с любов за всички, учещи английски
           </p>
         </div>
       </div>

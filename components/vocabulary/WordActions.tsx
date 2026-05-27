@@ -19,7 +19,12 @@ export default function WordActions({ wordId, userId, initialAdded }: Props) {
     return (
       <Link
         href="/login?next=/rechnik"
-        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 text-sm font-semibold hover:bg-indigo-100 transition-colors"
+        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+        style={{
+          border: "1px solid var(--line)",
+          background: "var(--coral-soft)",
+          color: "var(--coral-ink)",
+        }}
       >
         <BookMarked className="w-4 h-4" />
         Влез за да добавиш
@@ -44,11 +49,12 @@ export default function WordActions({ wordId, userId, initialAdded }: Props) {
     <button
       onClick={toggle}
       disabled={loading}
-      className={`group inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-[.97] disabled:opacity-60 ${
+      className="group inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-[.97] disabled:opacity-60"
+      style={
         added
-          ? 'bg-green-100 text-green-700 hover:bg-red-100 hover:text-red-700'
-          : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm shadow-indigo-200'
-      }`}
+          ? { background: "var(--sage)", color: "var(--sage-ink)" }
+          : { background: "var(--coral)", color: "#fff", boxShadow: "0 8px 16px -8px rgba(232,99,58,.6)" }
+      }
       title={added ? 'Премахни от учебния списък' : 'Добави към учебния списък'}
     >
       {loading ? (

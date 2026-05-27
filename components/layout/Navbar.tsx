@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { Menu, X, BookOpen, LogOut, TrendingUp } from "lucide-react";
+import { Menu, X, LogOut, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
@@ -24,7 +24,10 @@ function UserAvatar({ name }: { name: string }) {
     .join("")
     .toUpperCase();
   return (
-    <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+    <div
+      className="w-8 h-8 rounded-[10px] flex items-center justify-center text-xs font-bold"
+      style={{ background: "var(--lavender)", color: "var(--lav-ink)" }}
+    >
       {initials}
     </div>
   );
@@ -49,20 +52,41 @@ export default function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-zinc-100">
+    <header
+      className="sticky top-0 z-40 backdrop-blur-md"
+      style={{
+        background: "rgba(251,245,238,0.92)",
+        borderBottom: "1px solid var(--line)",
+      }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 shrink-0 cursor-pointer">
-          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-            <BookOpen className="w-4 h-4 text-white" />
-          </div>
-          <span
-            className="font-bold text-zinc-900 text-[15px] tracking-tight"
-            style={{ fontFamily: "var(--font-heading)" }}
+          <div
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold text-base"
+            style={{
+              background: "var(--coral)",
+              fontFamily: "var(--font-display)",
+              boxShadow: "0 6px 12px -4px rgba(232,99,58,.5)",
+            }}
           >
-            Учи Английски
-          </span>
+            У
+          </div>
+          <div>
+            <span
+              className="font-semibold text-[15px] tracking-tight block leading-none"
+              style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}
+            >
+              Учи Английски
+            </span>
+            <span
+              className="text-[10px] uppercase tracking-widest block leading-none mt-0.5"
+              style={{ color: "var(--muted)" }}
+            >
+              Learn English
+            </span>
+          </div>
         </Link>
 
         {/* Desktop nav */}
@@ -74,11 +98,16 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150 cursor-pointer",
+                  "px-3.5 py-1.5 rounded-xl text-sm font-medium transition-colors duration-150 cursor-pointer",
                   active
-                    ? "bg-zinc-100 text-zinc-900"
-                    : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"
+                    ? "text-[var(--ink)]"
+                    : "hover:text-[var(--ink)]"
                 )}
+                style={
+                  active
+                    ? { background: "var(--surface)", border: "1px solid var(--line)", color: "var(--ink)", boxShadow: "var(--shadow-sm)" }
+                    : { color: "var(--ink-2)" }
+                }
               >
                 {link.label}
               </Link>
@@ -91,14 +120,15 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-2 shrink-0">
             <Link
               href="/login"
-              className="px-3.5 py-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors cursor-pointer"
+              className="px-3.5 py-1.5 text-sm font-medium transition-colors cursor-pointer rounded-xl hover:bg-[var(--bg-2)]"
+              style={{ color: "var(--ink-2)" }}
             >
               Вход
             </Link>
             <Link
               href="/register"
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white transition-all duration-200 hover:-translate-y-px active:scale-[.98] cursor-pointer"
-              style={{ background: "#22C55E", boxShadow: "0 2px 8px rgba(34,197,94,.30)" }}
+              style={{ background: "var(--coral)", boxShadow: "0 8px 16px -8px rgba(232,99,58,.6)" }}
             >
               Регистрация
             </Link>
@@ -111,11 +141,13 @@ export default function Navbar() {
             <Link
               href="/napredak"
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer",
-                pathname.startsWith("/napredak")
-                  ? "bg-zinc-100 text-zinc-900"
-                  : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-colors cursor-pointer",
               )}
+              style={
+                pathname.startsWith("/napredak")
+                  ? { background: "var(--surface)", border: "1px solid var(--line)", color: "var(--ink)" }
+                  : { color: "var(--ink-2)" }
+              }
             >
               <TrendingUp className="w-4 h-4" />
               {displayName}
@@ -126,7 +158,8 @@ export default function Navbar() {
               </Link>
               <button
                 onClick={handleSignOut}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg transition-colors cursor-pointer"
+                style={{ color: "var(--muted)" }}
                 title="Изход"
               >
                 <LogOut className="w-4 h-4" />
@@ -137,7 +170,8 @@ export default function Navbar() {
 
         {/* Mobile toggle */}
         <button
-          className="md:hidden p-2 rounded-lg text-zinc-500 hover:bg-zinc-100 cursor-pointer"
+          className="md:hidden p-2 rounded-lg cursor-pointer"
+          style={{ color: "var(--muted)" }}
           onClick={() => setOpen(!open)}
           aria-label="Меню"
         >
@@ -147,7 +181,10 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {open && (
-        <div className="md:hidden border-t border-zinc-100 px-4 py-4 flex flex-col gap-1 bg-white">
+        <div
+          className="md:hidden px-4 py-4 flex flex-col gap-1"
+          style={{ borderTop: "1px solid var(--line)", background: "var(--bg)" }}
+        >
           {navLinks.map((link) => {
             const active = pathname.startsWith(link.href);
             return (
@@ -155,25 +192,26 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className={cn(
-                  "px-3.5 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer",
+                className="px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors cursor-pointer"
+                style={
                   active
-                    ? "bg-zinc-100 text-zinc-900"
-                    : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
-                )}
+                    ? { background: "var(--surface)", border: "1px solid var(--line)", color: "var(--ink)" }
+                    : { color: "var(--ink-2)" }
+                }
               >
                 {link.label}
               </Link>
             );
           })}
 
-          <div className="pt-3 mt-2 border-t border-zinc-100">
+          <div className="pt-3 mt-2" style={{ borderTop: "1px solid var(--line)" }}>
             {!user ? (
               <div className="flex gap-2">
                 <Link
                   href="/login"
                   onClick={() => setOpen(false)}
-                  className="flex-1 text-center px-3 py-2.5 rounded-xl text-sm font-semibold border border-zinc-200 text-zinc-700 hover:bg-zinc-50 cursor-pointer"
+                  className="flex-1 text-center px-3 py-2.5 rounded-xl text-sm font-semibold cursor-pointer"
+                  style={{ border: "1px solid var(--line)", color: "var(--ink-2)", background: "var(--surface)" }}
                 >
                   Вход
                 </Link>
@@ -181,7 +219,7 @@ export default function Navbar() {
                   href="/register"
                   onClick={() => setOpen(false)}
                   className="flex-1 text-center px-3 py-2.5 rounded-xl text-sm font-bold text-white cursor-pointer"
-                  style={{ background: "#22C55E" }}
+                  style={{ background: "var(--coral)" }}
                 >
                   Регистрация
                 </Link>
@@ -194,11 +232,12 @@ export default function Navbar() {
                   className="flex items-center gap-2 cursor-pointer"
                 >
                   <UserAvatar name={displayName} />
-                  <span className="text-sm font-medium text-zinc-700">{displayName}</span>
+                  <span className="text-sm font-medium" style={{ color: "var(--ink)" }}>{displayName}</span>
                 </Link>
                 <button
                   onClick={() => { setOpen(false); handleSignOut(); }}
-                  className="flex items-center gap-1.5 text-sm text-zinc-500 hover:text-red-600 transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 text-sm transition-colors cursor-pointer"
+                  style={{ color: "var(--muted)" }}
                 >
                   <LogOut className="w-4 h-4" />
                   Изход

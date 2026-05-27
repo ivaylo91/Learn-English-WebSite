@@ -10,7 +10,7 @@ export function Skeleton({ className }: SkeletonProps) {
 
 export function CardSkeleton() {
   return (
-    <div className="bg-white rounded-2xl p-5 border-2 border-indigo-100">
+    <div className="rounded-2xl p-5" style={{ background: "var(--surface)", border: "1px solid var(--line)" }}>
       <div className="flex items-start gap-4">
         <Skeleton className="shrink-0 w-12 h-12 rounded-xl" />
         <div className="flex-1 space-y-2">
@@ -25,7 +25,7 @@ export function CardSkeleton() {
 
 export function WordCardSkeleton() {
   return (
-    <div className="bg-white rounded-xl p-5 border-2 border-indigo-100">
+    <div className="rounded-xl p-5" style={{ background: "var(--surface)", border: "1px solid var(--line)" }}>
       <div className="flex items-center justify-between mb-2">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="h-5 w-8 rounded-full" />

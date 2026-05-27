@@ -45,7 +45,7 @@ export default async function ChetenePage() {
         title="Четене"
         description="Текстове на различни нива от A2 до C1. Ключови думи с превод преди четенето, въпроси за разбиране след текста."
         badge="Текстове"
-        badgeColor="amber"
+        badgeColor="sage"
         gradient="from-amber-500 to-orange-500"
         bg="bg-amber-50"
         iconColor="text-amber-600"

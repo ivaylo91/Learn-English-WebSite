@@ -52,7 +52,7 @@ export default async function SlushamPage() {
         title="Слушане"
         description="Автентични аудио клипове с транскрипт. Слушай, разбирай от контекст и отговаряй на въпроси за разбиране."
         badge="Аудио"
-        badgeColor="purple"
+        badgeColor="sky"
         gradient="from-purple-600 to-pink-600"
         bg="bg-purple-50"
         iconColor="text-purple-600"

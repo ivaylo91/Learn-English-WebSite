@@ -1,5 +1,5 @@
 function Skeleton({ className }: { className?: string }) {
-  return <div className={`animate-pulse bg-gray-100 rounded-xl ${className ?? ''}`} />;
+  return <div className={`skeleton rounded-xl ${className ?? ''}`} />;
 }
 
 export default function RechnikLoading() {
@@ -7,7 +7,7 @@ export default function RechnikLoading() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
 
       {/* ModuleHero skeleton */}
-      <div className="bg-white rounded-3xl border border-gray-100 p-7 mb-10 flex flex-col md:flex-row gap-6 shadow-sm">
+      <div className="bg-white rounded-3xl border border-[color:var(--line)] p-7 mb-10 flex flex-col md:flex-row gap-6 shadow-sm">
         <div className="flex-1 space-y-3">
           <Skeleton className="w-12 h-12 rounded-2xl" />
           <Skeleton className="h-8 w-32" />
@@ -40,7 +40,7 @@ export default function RechnikLoading() {
       {/* Word grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
         {Array.from({ length: 9 }).map((_, i) => (
-          <div key={i} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm space-y-2">
+          <div key={i} className="bg-white rounded-2xl p-4 border border-[color:var(--line)] shadow-sm space-y-2">
             <div className="flex items-start justify-between">
               <Skeleton className="h-6 w-28" />
               <Skeleton className="w-7 h-7 rounded-lg shrink-0" />

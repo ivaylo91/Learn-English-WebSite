@@ -13,10 +13,10 @@ interface WordCardProps {
   alreadyAdded?: boolean;
 }
 
-const levelColor: Record<string, 'green' | 'amber' | 'purple' | 'gray'> = {
-  A1: 'green', A2: 'green',
-  B1: 'amber', B2: 'amber',
-  C1: 'purple', C2: 'purple',
+const levelColor: Record<string, 'sage' | 'sky' | 'lavender' | 'gray'> = {
+  A1: 'sage', A2: 'sage',
+  B1: 'sky',  B2: 'sky',
+  C1: 'lavender', C2: 'lavender',
 };
 
 export default function WordCard({ word, userId, alreadyAdded = false }: WordCardProps) {
@@ -39,11 +39,23 @@ export default function WordCard({ word, userId, alreadyAdded = false }: WordCar
   };
 
   return (
-    <div className="group/card bg-white rounded-2xl p-5 border border-gray-100 hover:border-indigo-200 hover:shadow-[0_4px_20px_-4px_rgba(79,70,229,0.12)] hover:-translate-y-0.5 transition-all duration-200">
+    <div
+      className="group/card rounded-2xl p-5 hover:-translate-y-0.5 transition-all duration-200"
+      style={{
+        background: "var(--surface)",
+        border: "1px solid var(--line)",
+        boxShadow: "var(--shadow-sm)",
+      }}
+    >
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-2 flex-wrap">
           <Badge color={levelColor[word.level] ?? 'gray'}>{word.level}</Badge>
-          <span className="text-xs text-gray-400 uppercase tracking-wide">{word.category}</span>
+          <span
+            className="text-xs uppercase tracking-wide"
+            style={{ color: "var(--muted)" }}
+          >
+            {word.category}
+          </span>
         </div>
 
         {userId && (
@@ -51,11 +63,12 @@ export default function WordCard({ word, userId, alreadyAdded = false }: WordCar
             onClick={toggle}
             disabled={loading}
             title={added ? 'Премахни от флаш карти' : 'Добави към флаш карти'}
-            className={`group/btn shrink-0 w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-150 cursor-pointer disabled:opacity-70 ${
+            className="group/btn shrink-0 w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-150 cursor-pointer disabled:opacity-70"
+            style={
               added
-                ? 'bg-green-100 text-green-600 hover:bg-red-100 hover:text-red-600'
-                : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
-            }`}
+                ? { background: "var(--sage)", color: "var(--sage-ink)" }
+                : { background: "var(--coral-soft)", color: "var(--coral-ink)" }
+            }
           >
             {loading ? (
               <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -72,15 +85,23 @@ export default function WordCard({ word, userId, alreadyAdded = false }: WordCar
       </div>
 
       <Link href={`/rechnik/${word.id}`} className="block">
-        <p className="font-bold text-gray-900 text-lg leading-tight hover:text-indigo-700 transition-colors">
+        <p
+          className="font-bold text-lg leading-tight transition-colors"
+          style={{ color: "var(--ink)", fontFamily: "var(--font-display)" }}
+        >
           {word.word_en}
         </p>
         {word.phonetic && (
-          <p className="text-xs text-gray-400 font-mono mt-0.5">{word.phonetic}</p>
+          <p className="text-xs mt-0.5" style={{ color: "var(--muted)", fontFamily: "var(--font-code)" }}>
+            {word.phonetic}
+          </p>
         )}
-        <p className="text-sm text-gray-500 italic mt-2">{word.word_bg}</p>
+        <p className="text-sm italic mt-2" style={{ color: "var(--ink-2)" }}>{word.word_bg}</p>
         {word.example_en && (
-          <p className="mt-3 text-xs text-gray-400 leading-relaxed line-clamp-2 border-t border-gray-50 pt-2.5">
+          <p
+            className="mt-3 text-xs leading-relaxed line-clamp-2 pt-2.5"
+            style={{ color: "var(--muted)", borderTop: "1px solid var(--line)" }}
+          >
             {word.example_en}
           </p>
         )}

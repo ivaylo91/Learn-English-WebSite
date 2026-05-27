@@ -34,7 +34,7 @@ export default async function RechnikPage() {
         title="Речник"
         description="Над 2 000 думи по теми и ниво. Учи с флаш карти и умно повторение — системата запомня кое знаеш и кое не."
         badge="Флаш карти"
-        badgeColor="indigo"
+        badgeColor="coral"
         gradient="from-indigo-600 to-violet-600"
         bg="bg-indigo-50"
         iconColor="text-indigo-600"
@@ -46,16 +46,20 @@ export default async function RechnikPage() {
       />
 
       {/* Study CTA */}
-      <div className="flex items-center justify-between mb-8 p-5 bg-indigo-50 rounded-2xl border border-indigo-100">
+      <div
+        className="flex items-center justify-between mb-8 p-5 rounded-2xl"
+        style={{ background: "var(--coral-soft)", border: "1px solid #f4c8a8" }}
+      >
         <div>
-          <p className="font-bold text-gray-900 text-sm">Готов ли си за повторение?</p>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="font-bold text-sm" style={{ color: "var(--ink)" }}>Готов ли си за повторение?</p>
+          <p className="text-xs mt-0.5" style={{ color: "var(--coral-ink)" }}>
             Системата знае кои думи трябва да прегледаш днес.
           </p>
         </div>
         <Link
           href="/rechnik/study"
-          className="shrink-0 inline-flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-indigo-700 active:scale-[.98] transition-all shadow-sm"
+          className="shrink-0 inline-flex items-center gap-2 text-white px-5 py-2.5 rounded-xl font-semibold text-sm active:scale-[.98] transition-all"
+          style={{ background: "var(--coral)", boxShadow: "0 8px 16px -8px rgba(232,99,58,.5)" }}
         >
           <Zap className="w-4 h-4" />
           Учи сега
@@ -63,7 +67,7 @@ export default async function RechnikPage() {
       </div>
 
       <section>
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Всички думи</h2>
+        <h2 className="text-lg font-bold mb-4" style={{ color: "var(--ink)" }}>Всички думи</h2>
         <WordListClient words={allWords} categories={categories} addedWordIds={addedWordIds} />
       </section>
     </div>

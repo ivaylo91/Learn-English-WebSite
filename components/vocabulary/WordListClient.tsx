@@ -40,26 +40,35 @@ export default function WordListClient({ words, categories, addedWordIds = [] }:
     <div>
       {/* Search */}
       <div className="relative mb-6">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--muted)" }} />
         <input
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder="Търси на английски или български..."
-          className="w-full pl-11 pr-4 py-3 text-sm bg-white border border-gray-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
+          className="w-full pl-11 pr-4 py-3 text-sm rounded-2xl focus:outline-none"
+          style={{
+            background: "var(--surface)",
+            border: "1px solid var(--line)",
+            boxShadow: "var(--shadow-sm)",
+            color: "var(--ink)",
+          }}
+          onFocus={e => { e.currentTarget.style.borderColor = "var(--coral)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(232,99,58,.15)"; }}
+          onBlur={e => { e.currentTarget.style.borderColor = "var(--line)"; e.currentTarget.style.boxShadow = "var(--shadow-sm)"; }}
         />
       </div>
 
       {/* Level filter */}
       <div className="flex items-center gap-2 flex-wrap mb-4">
-        <SlidersHorizontal className="w-4 h-4 text-gray-400 shrink-0" />
+        <SlidersHorizontal className="w-4 h-4 shrink-0" style={{ color: "var(--muted)" }} />
         <button
           onClick={() => setActiveLevel(null)}
-          className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+          className="px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer"
+          style={
             activeLevel === null
-              ? 'bg-indigo-600 text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
+              ? { background: "var(--coral)", color: "#fff" }
+              : { background: "var(--bg-2)", color: "var(--ink-2)" }
+          }
         >
           Всички нива
         </button>
@@ -67,11 +76,12 @@ export default function WordListClient({ words, categories, addedWordIds = [] }:
           <button
             key={l}
             onClick={() => setActiveLevel(activeLevel === l ? null : l)}
-            className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+            className="px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer"
+            style={
               activeLevel === l
-                ? 'bg-indigo-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
+                ? { background: "var(--coral)", color: "#fff" }
+                : { background: "var(--bg-2)", color: "var(--ink-2)" }
+            }
           >
             {l}
           </button>
@@ -82,11 +92,12 @@ export default function WordListClient({ words, categories, addedWordIds = [] }:
       <div className="flex items-center gap-2 flex-wrap mb-8 overflow-x-auto pb-1">
         <button
           onClick={() => setActiveCategory(null)}
-          className={`shrink-0 px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+          className="shrink-0 px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer"
+          style={
             activeCategory === null
-              ? 'bg-gray-900 text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
+              ? { background: "var(--ink)", color: "var(--bg)" }
+              : { background: "var(--bg-2)", color: "var(--ink-2)" }
+          }
         >
           Всички теми
         </button>
@@ -94,11 +105,12 @@ export default function WordListClient({ words, categories, addedWordIds = [] }:
           <button
             key={c}
             onClick={() => setActiveCategory(activeCategory === c ? null : c)}
-            className={`shrink-0 px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+            className="shrink-0 px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer"
+            style={
               activeCategory === c
-                ? 'bg-gray-900 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
+                ? { background: "var(--ink)", color: "var(--bg)" }
+                : { background: "var(--bg-2)", color: "var(--ink-2)" }
+            }
           >
             {c}
           </button>
@@ -106,17 +118,17 @@ export default function WordListClient({ words, categories, addedWordIds = [] }:
       </div>
 
       {/* Results count */}
-      <p className="text-xs text-gray-400 mb-4 tabular-nums">
+      <p className="text-xs mb-4 tabular-nums" style={{ color: "var(--muted)" }}>
         {filtered.length} {filtered.length === 1 ? 'дума' : 'думи'}
         {!user && (
-          <span className="ml-2 text-indigo-500">— влез за да добавяш думи</span>
+          <span className="ml-2" style={{ color: "var(--coral)" }}>— влез за да добавяш думи</span>
         )}
       </p>
 
       {/* Word grid */}
       {filtered.length === 0 ? (
         <div className="py-16 text-center">
-          <p className="text-gray-400 text-sm">Няма намерени думи.</p>
+          <p className="text-sm" style={{ color: "var(--muted)" }}>Няма намерени думи.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">

@@ -8,13 +8,13 @@ import type { Level } from '@/lib/types/database';
 
 const LEVELS: Level[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
-const levelColor: Record<Level, string> = {
-  A1: 'border-green-300  bg-green-50  text-green-700  ring-green-400',
-  A2: 'border-green-300  bg-green-50  text-green-700  ring-green-400',
-  B1: 'border-amber-300  bg-amber-50  text-amber-700  ring-amber-400',
-  B2: 'border-amber-300  bg-amber-50  text-amber-700  ring-amber-400',
-  C1: 'border-purple-300 bg-purple-50 text-purple-700 ring-purple-400',
-  C2: 'border-purple-300 bg-purple-50 text-purple-700 ring-purple-400',
+const levelTheme: Record<Level, React.CSSProperties> = {
+  A1: { background: "var(--sage)",     color: "var(--sage-ink)",  border: "2px solid #b5d8be" },
+  A2: { background: "var(--sage)",     color: "var(--sage-ink)",  border: "2px solid #b5d8be" },
+  B1: { background: "var(--sky)",      color: "var(--sky-ink)",   border: "2px solid #b4cfe4" },
+  B2: { background: "var(--sky)",      color: "var(--sky-ink)",   border: "2px solid #b4cfe4" },
+  C1: { background: "var(--lavender)", color: "var(--lav-ink)",   border: "2px solid #c9bce4" },
+  C2: { background: "var(--lavender)", color: "var(--lav-ink)",   border: "2px solid #c9bce4" },
 };
 
 interface Props {
@@ -63,7 +63,7 @@ export default function ProfileForm({ userId, initName, initLevel }: Props) {
 
       {/* Name */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="name" className="text-sm font-medium text-gray-700">
+        <label htmlFor="name" className="text-sm font-semibold" style={{ color: "var(--ink-2)" }}>
           Три имена (или псевдоним)
         </label>
         <input
@@ -72,25 +72,29 @@ export default function ProfileForm({ userId, initName, initLevel }: Props) {
           onChange={e => setName(e.target.value)}
           maxLength={60}
           required
-          className="w-full px-4 py-2.5 text-sm border border-zinc-200 rounded-xl bg-zinc-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+          className="w-full px-4 py-2.5 text-sm rounded-xl focus:outline-none transition"
+          style={{ border: "1px solid var(--line)", background: "var(--bg)", color: "var(--ink)" }}
+          onFocus={e => { e.currentTarget.style.borderColor = "var(--coral)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(232,99,58,.15)"; }}
+          onBlur={e => { e.currentTarget.style.borderColor = "var(--line)"; e.currentTarget.style.boxShadow = "none"; }}
           placeholder="Твоето име"
         />
       </div>
 
       {/* Level picker */}
       <div className="flex flex-col gap-2">
-        <p className="text-sm font-medium text-gray-700">Моето ниво</p>
+        <p className="text-sm font-semibold" style={{ color: "var(--ink-2)" }}>Моето ниво</p>
         <div className="flex flex-wrap gap-2">
           {LEVELS.map(l => (
             <button
               key={l}
               type="button"
               onClick={() => setLevel(l)}
-              className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-all ${
+              className="px-4 py-1.5 rounded-full text-sm font-semibold transition-all"
+              style={
                 level === l
-                  ? `${levelColor[l]} ring-2 ring-offset-1`
-                  : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'
-              }`}
+                  ? { ...levelTheme[l], outline: "2px solid var(--coral)", outlineOffset: "2px" }
+                  : { background: "var(--bg-2)", color: "var(--muted)", border: "1px solid var(--line)" }
+              }
             >
               {l}
             </button>
@@ -100,13 +104,19 @@ export default function ProfileForm({ userId, initName, initLevel }: Props) {
 
       {/* Feedback */}
       {status === 'success' && (
-        <div className="flex items-center gap-2 px-3 py-2.5 bg-green-50 border border-green-100 rounded-xl text-sm text-green-700">
+        <div
+          className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm"
+          style={{ background: "var(--sage)", border: "1px solid #b5d8be", color: "var(--sage-ink)" }}
+        >
           <CheckCircle2 className="w-4 h-4 shrink-0" />
           Профилът е обновен.
         </div>
       )}
       {status === 'error' && (
-        <div className="flex items-center gap-2 px-3 py-2.5 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600">
+        <div
+          className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm"
+          style={{ background: "var(--rose)", border: "1px solid #ecb9b9", color: "var(--rose-ink)" }}
+        >
           <AlertCircle className="w-4 h-4 shrink-0" />
           Грешка при запазване. Опитай отново.
         </div>
@@ -116,7 +126,8 @@ export default function ProfileForm({ userId, initName, initLevel }: Props) {
       <button
         type="submit"
         disabled={loading}
-        className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 active:scale-[.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+        className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-white text-sm font-semibold active:scale-[.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+        style={{ background: "var(--coral)", boxShadow: "0 8px 16px -8px rgba(232,99,58,.5)" }}
       >
         {loading
           ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

@@ -49,7 +49,7 @@ export default async function GramatikaPage() {
         title="Граматика"
         description="Уроци от A1 до C1, всеки с обяснение на български и интерактивни упражнения. Системата следи напредъка ти автоматично."
         badge="Упражнения"
-        badgeColor="green"
+        badgeColor="lavender"
         gradient="from-emerald-500 to-teal-600"
         bg="bg-emerald-50"
         iconColor="text-emerald-600"

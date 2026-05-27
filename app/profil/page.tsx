@@ -12,10 +12,10 @@ export const metadata: Metadata = {
   description: 'Управлявай акаунта си — промени името, нивото и паролата.',
 };
 
-const levelColor: Record<string, 'green' | 'amber' | 'purple' | 'gray'> = {
-  A1: 'green', A2: 'green',
-  B1: 'amber', B2: 'amber',
-  C1: 'purple', C2: 'purple',
+const levelColor: Record<string, 'sage' | 'sky' | 'lavender' | 'gray'> = {
+  A1: 'sage', A2: 'sage',
+  B1: 'sky',  B2: 'sky',
+  C1: 'lavender', C2: 'lavender',
 };
 
 function formatDate(iso: string) {
@@ -33,7 +33,14 @@ function Avatar({ name }: { name: string }) {
     .join('')
     .toUpperCase() || '?';
   return (
-    <div className="w-16 h-16 rounded-2xl bg-indigo-600 flex items-center justify-center text-white text-xl font-extrabold shadow-lg shadow-indigo-200 shrink-0">
+    <div
+      className="w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-extrabold shrink-0"
+      style={{
+        background: "var(--lavender)",
+        color: "var(--lav-ink)",
+        fontFamily: "var(--font-display)",
+      }}
+    >
       {initials}
     </div>
   );
@@ -62,59 +69,76 @@ export default async function ProfilPage() {
 
       <Link
         href="/napredak"
-        className="inline-flex items-center gap-1.5 text-sm text-indigo-600 hover:underline mb-6"
+        className="inline-flex items-center gap-1.5 text-sm font-medium hover:underline mb-6"
+        style={{ color: "var(--coral)" }}
       >
         <ChevronLeft className="w-4 h-4" />
         Напредък
       </Link>
 
       <div className="mb-8">
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-1">Моят профил</h1>
-        <p className="text-gray-500 text-sm">Управлявай акаунта и предпочитанията си.</p>
+        <h1 className="text-3xl font-extrabold mb-1" style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}>
+          Моят профил
+        </h1>
+        <p className="text-sm" style={{ color: "var(--muted)" }}>Управлявай акаунта и предпочитанията си.</p>
       </div>
 
       {/* Identity card */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center gap-5 mb-6">
+      <div
+        className="rounded-2xl p-6 flex items-center gap-5 mb-6"
+        style={{ background: "var(--surface)", border: "1px solid var(--line)", boxShadow: "var(--shadow-sm)" }}
+      >
         <Avatar name={name} />
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-1">
-            <h2 className="text-lg font-bold text-gray-900 truncate">{name}</h2>
+            <h2 className="text-lg font-bold truncate" style={{ color: "var(--ink)" }}>{name}</h2>
             <Badge color={levelColor[level] ?? 'gray'}>{level}</Badge>
           </div>
-          <p className="text-sm text-gray-500 truncate">{user.email}</p>
-          <p className="text-xs text-gray-400 mt-0.5">Член от {formatDate(joinedAt)}</p>
+          <p className="text-sm truncate" style={{ color: "var(--muted)" }}>{user.email}</p>
+          <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>Член от {formatDate(joinedAt)}</p>
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 mb-8">
         {[
-          { label: 'Точки XP',  value: String(xp),     icon: Trophy,     color: 'text-amber-600',  bg: 'bg-amber-50'  },
-          { label: 'Дни поред', value: String(streak),  icon: Flame,      color: 'text-orange-500', bg: 'bg-orange-50' },
-          { label: 'Ниво',      value: level,           icon: TrendingUp, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-        ].map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
-            <div className={`w-9 h-9 ${bg} rounded-xl flex items-center justify-center mx-auto mb-2`}>
-              <Icon className={`w-4 h-4 ${color}`} />
+          { label: 'Точки XP',  value: String(xp),    icon: Trophy,     bg: "var(--butter)",   color: "var(--butter-ink)" },
+          { label: 'Дни поред', value: String(streak), icon: Flame,      bg: "var(--peach)",    color: "var(--coral-ink)" },
+          { label: 'Ниво',      value: level,          icon: TrendingUp, bg: "var(--lavender)", color: "var(--lav-ink)"   },
+        ].map(({ label, value, icon: Icon, bg, color }) => (
+          <div
+            key={label}
+            className="rounded-2xl p-4 text-center"
+            style={{ background: "var(--surface)", border: "1px solid var(--line)", boxShadow: "var(--shadow-sm)" }}
+          >
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center mx-auto mb-2" style={{ background: bg }}>
+              <Icon className="w-4 h-4" style={{ color }} />
             </div>
-            <p className="text-xl font-extrabold text-gray-900">{value}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{label}</p>
+            <p className="text-xl font-extrabold" style={{ color: "var(--ink)" }}>{value}</p>
+            <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>{label}</p>
           </div>
         ))}
       </div>
 
       {/* Edit form */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
-        <h3 className="text-base font-bold text-gray-900 mb-5">Редактирай профила</h3>
+      <div
+        className="rounded-2xl p-6 mb-6"
+        style={{ background: "var(--surface)", border: "1px solid var(--line)", boxShadow: "var(--shadow-sm)" }}
+      >
+        <h3 className="text-base font-bold mb-5" style={{ color: "var(--ink)" }}>Редактирай профила</h3>
         <ProfileForm userId={user.id} initName={name} initLevel={level} />
       </div>
 
       {/* Security */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <h3 className="text-base font-bold text-gray-900 mb-4">Сигурност</h3>
+      <div
+        className="rounded-2xl p-6"
+        style={{ background: "var(--surface)", border: "1px solid var(--line)", boxShadow: "var(--shadow-sm)" }}
+      >
+        <h3 className="text-base font-bold mb-4" style={{ color: "var(--ink)" }}>Сигурност</h3>
         <Link
           href="/forgot-password"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:underline"
+          className="inline-flex items-center gap-2 text-sm font-semibold hover:underline"
+          style={{ color: "var(--coral)" }}
         >
           <KeyRound className="w-4 h-4" />
           Промяна на паролата

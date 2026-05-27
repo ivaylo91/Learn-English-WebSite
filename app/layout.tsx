@@ -1,21 +1,28 @@
 import type { Metadata } from "next";
-import { Outfit, DM_Sans } from "next/font/google";
+import { Bricolage_Grotesque, Manrope, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 
-const outfit = Outfit({
+const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-outfit",
+  variable: "--font-display",
   display: "swap",
 });
 
-const dmSans = DM_Sans({
+const manrope = Manrope({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   weight: ["400", "500"],
-  variable: "--font-dm",
+  variable: "--font-mono",
   display: "swap",
 });
 
@@ -36,10 +43,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="bg" className={`${outfit.variable} ${dmSans.variable}`}>
+    <html lang="bg" className={`${bricolage.variable} ${manrope.variable} ${jetbrainsMono.variable}`}>
       <body
         className="min-h-screen flex flex-col antialiased"
-        style={{ fontFamily: "var(--font-dm), system-ui, sans-serif", background: "#FAFBFF" }}
+        style={{ fontFamily: "var(--font-sans), system-ui, sans-serif", background: "#fbf5ee" }}
       >
         <AuthProvider>
           <Navbar />
