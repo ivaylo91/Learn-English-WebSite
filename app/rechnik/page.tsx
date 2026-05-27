@@ -13,13 +13,19 @@ export const metadata: Metadata = {
 export default async function RechnikPage() {
   const supabase = await createClient();
 
-  const [{ data: words }, { data: catRows }] = await Promise.all([
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const [{ data: words }, { data: catRows }, { data: progressRows }] = await Promise.all([
     supabase.from('vocabulary_words').select('*').order('level').order('word_en'),
     supabase.from('vocabulary_words').select('category').order('category'),
+    user
+      ? supabase.from('user_word_progress').select('word_id').eq('user_id', user.id)
+      : Promise.resolve({ data: [] }),
   ]);
 
-  const allWords = words ?? [];
-  const categories = [...new Set((catRows ?? []).map(r => r.category))] as string[];
+  const allWords      = words ?? [];
+  const categories    = [...new Set((catRows ?? []).map(r => r.category))] as string[];
+  const addedWordIds  = (progressRows ?? []).map(r => r.word_id) as string[];
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
@@ -56,10 +62,9 @@ export default async function RechnikPage() {
         </Link>
       </div>
 
-      {/* Word list with search + filters */}
       <section>
         <h2 className="text-lg font-bold text-gray-900 mb-4">Всички думи</h2>
-        <WordListClient words={allWords} categories={categories} />
+        <WordListClient words={allWords} categories={categories} addedWordIds={addedWordIds} />
       </section>
     </div>
   );

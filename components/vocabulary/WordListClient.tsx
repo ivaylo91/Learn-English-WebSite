@@ -9,12 +9,14 @@ import { Search, SlidersHorizontal } from 'lucide-react';
 interface WordListClientProps {
   words: VocabularyWord[];
   categories: string[];
+  addedWordIds?: string[];
 }
 
 const LEVELS: Level[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
-export default function WordListClient({ words, categories }: WordListClientProps) {
+export default function WordListClient({ words, categories, addedWordIds = [] }: WordListClientProps) {
   const { user } = useAuthStore();
+  const addedSet = useMemo(() => new Set(addedWordIds), [addedWordIds]);
   const [query, setQuery] = useState('');
   const [activeLevel, setActiveLevel] = useState<Level | null>(null);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -123,6 +125,7 @@ export default function WordListClient({ words, categories }: WordListClientProp
               key={word.id}
               word={word}
               userId={user?.id}
+              alreadyAdded={addedSet.has(word.id)}
             />
           ))}
         </div>

@@ -36,6 +36,16 @@ export async function addWordToStudyList(userId: string, wordId: string): Promis
     .upsert({ user_id: userId, word_id: wordId }, { onConflict: "user_id,word_id" });
 }
 
+/** Remove a word from the user's study list */
+export async function removeWordFromStudyList(userId: string, wordId: string): Promise<void> {
+  const supabase = createClient();
+  await supabase
+    .from("user_word_progress")
+    .delete()
+    .eq("user_id", userId)
+    .eq("word_id", wordId);
+}
+
 /**
  * SM-2 spaced repetition update.
  * quality: 0-5  (0-2 = fail, 3-5 = pass)
