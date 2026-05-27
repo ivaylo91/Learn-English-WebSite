@@ -1,14 +1,34 @@
 import Link from "next/link";
 import {
   BookOpen, Headphones, BookMarked, PenLine,
-  ArrowRight, CheckCircle2, TrendingUp, Volume2,
+  ArrowRight, CheckCircle2, TrendingUp,
 } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import OnboardingBanner from "@/components/OnboardingBanner";
 import { createClient } from "@/lib/supabase/server";
 
 /* ─── Flashcard hero visual ─── */
-function HeroCard() {
+interface WordOfDay {
+  word_en: string;
+  word_bg: string;
+  phonetic: string | null;
+  level: string;
+  category: string;
+}
+
+const LEVEL_BAR: Record<string, number> = {
+  A1: 10, A2: 20, B1: 40, B2: 60, C1: 80, C2: 100,
+};
+
+function HeroCard({ word }: { word: WordOfDay | null }) {
+  const w = word ?? {
+    word_en: 'Resilient',
+    word_bg: 'устойчив',
+    phonetic: '/ rɪˈzɪliənt /',
+    level: 'B2',
+    category: 'прилагателно',
+  };
+
   return (
     <div className="relative flex items-center justify-center py-10 md:py-0">
       {/* Ambient blobs */}
@@ -28,27 +48,33 @@ function HeroCard() {
           Дума на деня
         </p>
         <div className="flex items-start justify-between mb-1">
-          <p className="text-4xl font-extrabold" style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}>
-            Resilient
+          <p className="text-4xl font-extrabold leading-tight" style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}>
+            {w.word_en}
           </p>
-          <button
-            className="mt-1 p-1.5 rounded-lg transition-colors duration-200 cursor-pointer"
-            style={{ background: "var(--bg-2)", color: "var(--muted)" }}
+          <div
+            className="mt-1 px-2 py-0.5 rounded-lg text-xs font-bold shrink-0"
+            style={{ background: "var(--coral-soft)", color: "var(--coral-ink)" }}
           >
-            <Volume2 className="w-4 h-4" />
-          </button>
+            {w.level}
+          </div>
         </div>
-        <p className="text-sm mb-5" style={{ color: "var(--muted)", fontFamily: "var(--font-code)" }}>/ rɪˈzɪliənt /</p>
+        {w.phonetic && (
+          <p className="text-sm mb-4" style={{ color: "var(--muted)", fontFamily: "var(--font-code)" }}>{w.phonetic}</p>
+        )}
         <div className="h-px mb-4" style={{ background: "var(--line)" }} />
         <p className="text-xl font-semibold" style={{ fontFamily: "var(--font-display)", color: "var(--coral)" }}>
-          устойчив
+          {w.word_bg}
         </p>
-        <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>прилагателно &nbsp;·&nbsp; ниво B2</p>
+        <p className="text-xs mt-0.5 capitalize" style={{ color: "var(--muted)" }}>{w.category}</p>
         <div className="mt-5 h-1.5 rounded-full overflow-hidden" style={{ background: "var(--bg-2)" }}>
-          <div className="h-full rounded-full" style={{ width: "62%", background: "var(--coral)" }} />
+          <div
+            className="h-full rounded-full transition-all"
+            style={{ width: `${LEVEL_BAR[w.level] ?? 60}%`, background: "var(--coral)" }}
+          />
         </div>
         <div className="flex justify-between text-[11px] mt-1.5" style={{ color: "var(--muted)" }}>
-          <span>Напредък</span><span>62%</span>
+          <span>Ниво {w.level}</span>
+          <span>{LEVEL_BAR[w.level] ?? 60}%</span>
         </div>
       </div>
 
@@ -194,15 +220,38 @@ const stats = [
 
 export default async function HomePage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+
+  // Fetch auth + word count in parallel
+  const [{ data: { user } }, countRes] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from('vocabulary_words').select('id', { count: 'exact', head: true }),
+  ]);
+
+  // Deterministic daily word: days-since-epoch % total
+  const wordCount = countRes.count ?? 0;
+  const dayNumber = Math.floor(Date.now() / 86_400_000);
+  const offset    = wordCount > 0 ? dayNumber % wordCount : 0;
+
+  // Fetch profile (if logged in) + word of the day in parallel
+  const [profileRes, wordRes] = await Promise.all([
+    user
+      ? supabase.from('profiles').select('name, xp').eq('id', user.id).single()
+      : Promise.resolve({ data: null }),
+    wordCount > 0
+      ? supabase
+          .from('vocabulary_words')
+          .select('word_en, word_bg, phonetic, level, category')
+          .order('created_at', { ascending: true })
+          .range(offset, offset)
+          .single()
+      : Promise.resolve({ data: null }),
+  ]);
+
+  const wordOfDay = wordRes.data as WordOfDay | null;
 
   let onboardingName: string | null = null;
   if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('name, xp')
-      .eq('id', user.id)
-      .single();
+    const profile = profileRes.data;
     if (profile && profile.xp === 0) {
       onboardingName =
         profile.name ||
@@ -295,7 +344,7 @@ export default async function HomePage() {
 
           {/* RIGHT — flashcard visual */}
           <div className="animate-fade-in" style={{ animationDelay: "200ms" }}>
-            <HeroCard />
+            <HeroCard word={wordOfDay} />
           </div>
         </div>
       </section>
