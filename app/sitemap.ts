@@ -1,15 +1,24 @@
 import type { MetadataRoute } from 'next';
-import { createServiceClient } from '@/lib/supabase/service';
+import { createClient } from '@supabase/supabase-js';
 
 const BASE = 'https://uchi-angliyski.vercel.app';
 
+// Sitemap only reads public tables — anon key is sufficient, no service role needed.
+function db() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { persistSession: false } },
+  );
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const db = createServiceClient();
+  const db_ = db();
 
   const [grammarRes, listeningRes, readingRes] = await Promise.all([
-    db.from('grammar_lessons').select('slug, created_at'),
-    db.from('listening_clips').select('id, created_at'),
-    db.from('reading_texts').select('slug, created_at'),
+    db_.from('grammar_lessons').select('slug, created_at'),
+    db_.from('listening_clips').select('id, created_at'),
+    db_.from('reading_texts').select('slug, created_at'),
   ]);
 
   const now = new Date();
