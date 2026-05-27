@@ -83,7 +83,33 @@ The `handle_new_user()` trigger automatically creates a `profiles` row when a ne
 
 ## 5. Storage (Optional — for audio files)
 
-If self-hosting audio for the Listening module:
-1. Create a public bucket named `audio` in Supabase Storage
-2. Upload `.mp3` files
-3. Update `audio_url` values in `listening_clips` with the public URLs
+The admin panel has a built-in audio upload button that uploads directly to Supabase Storage. To enable it:
+
+**Step A — Create the bucket**
+
+In **Supabase Dashboard → Storage → New bucket**:
+- Name: `audio`
+- Public bucket: **yes** (checked)
+
+**Step B — Add RLS policies**
+
+In **Supabase Dashboard → SQL Editor**, run:
+
+```sql
+-- Public read (needed for the <audio> element to load the file)
+CREATE POLICY "Public audio read"
+ON storage.objects FOR SELECT TO public
+USING (bucket_id = 'audio');
+
+-- Authenticated users can upload
+CREATE POLICY "Authenticated audio upload"
+ON storage.objects FOR INSERT TO authenticated
+WITH CHECK (bucket_id = 'audio');
+
+-- Authenticated users can delete
+CREATE POLICY "Authenticated audio delete"
+ON storage.objects FOR DELETE TO authenticated
+USING (bucket_id = 'audio');
+```
+
+After setup, go to **Admin → Слушане → [edit any clip]** and click "Качи .mp3" to upload an audio file. The public URL is filled in automatically.

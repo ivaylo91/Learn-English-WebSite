@@ -1,5 +1,6 @@
 import { upsertClip } from '@/lib/actions/admin';
 import { Field, Input, Textarea, Select } from '@/components/admin/AdminFormField';
+import AudioUploadField from '@/components/admin/AudioUploadField';
 import Link from 'next/link';
 
 export const metadata = { title: 'Нов клип | Админ' };
@@ -28,8 +29,8 @@ export default function NewClipPage() {
           <Input name="title" placeholder="A Day at the Market" required />
         </Field>
 
-        <Field label="URL на аудиото" name="audio_url" hint="Директна връзка към .mp3 файл">
-          <Input name="audio_url" type="url" placeholder="https://..." required />
+        <Field label="Аудио файл" name="audio_url" hint="Качи .mp3 файл или постави директна URL връзка">
+          <AudioUploadField name="audio_url" />
         </Field>
 
         <div className="grid grid-cols-2 gap-4">

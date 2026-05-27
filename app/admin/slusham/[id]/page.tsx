@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import { upsertClip } from '@/lib/actions/admin';
 import { Field, Input, Textarea, Select } from '@/components/admin/AdminFormField';
+import AudioUploadField from '@/components/admin/AudioUploadField';
 import Link from 'next/link';
 
 export const metadata = { title: 'Редактирай клип | Админ' };
@@ -37,8 +38,8 @@ export default async function EditClipPage({ params }: { params: Promise<{ id: s
           <Input name="title" defaultValue={clip.title} required />
         </Field>
 
-        <Field label="URL на аудиото" name="audio_url" hint="Директна връзка към .mp3 файл">
-          <Input name="audio_url" type="url" defaultValue={clip.audio_url} required />
+        <Field label="Аудио файл" name="audio_url" hint="Качи .mp3 файл или постави директна URL връзка">
+          <AudioUploadField name="audio_url" defaultValue={clip.audio_url} />
         </Field>
 
         <div className="grid grid-cols-2 gap-4">
