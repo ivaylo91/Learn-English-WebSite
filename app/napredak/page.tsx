@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { TrendingUp, Flame, Trophy, Target, BookMarked, PenLine, Headphones, BookOpen } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import Badge from '@/components/ui/Badge';
+import StreakCalendar from '@/components/napredak/StreakCalendar';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -65,6 +66,7 @@ export default async function NapredakPage() {
     readingTotalRes,
     readingProgressRes,
     activityRes,
+    activityDatesRes,
   ] = await Promise.all([
     supabase.from('profiles').select('xp, streak, level').eq('id', user.id).single(),
     supabase.from('vocabulary_words').select('id', { count: 'exact', head: true }),
@@ -81,7 +83,31 @@ export default async function NapredakPage() {
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(10),
+    supabase
+      .from('user_activity')
+      .select('created_at')
+      .eq('user_id', user.id)
+      .gte('created_at', new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString())
+      .order('created_at', { ascending: true }),
   ]);
+
+  // Unique activity dates (YYYY-MM-DD, UTC) for streak calendar
+  const activeDates = [...new Set(
+    (activityDatesRes.data ?? []).map(r => r.created_at.slice(0, 10))
+  )].sort();
+
+  // Longest streak from sorted unique dates
+  function longestStreak(dates: string[]): number {
+    if (dates.length === 0) return 0;
+    let best = 1, cur = 1;
+    for (let i = 1; i < dates.length; i++) {
+      const diff = (new Date(dates[i]).getTime() - new Date(dates[i - 1]).getTime()) / 86_400_000;
+      if (diff === 1) { best = Math.max(best, ++cur); }
+      else if (diff > 1) { cur = 1; }
+    }
+    return best;
+  }
+  const bestStreak = longestStreak(activeDates);
 
   const profile        = profileRes.data;
   const vocabTotal     = vocabTotalRes.count ?? 0;
@@ -158,6 +184,33 @@ export default async function NapredakPage() {
           </div>
         ))}
       </div>
+
+      {/* Streak calendar */}
+      <section className="mb-10">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold" style={{ color: 'var(--ink)' }}>Активност</h2>
+          <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--muted)' }}>
+            <span>
+              Текущ серия:&nbsp;
+              <span className="font-bold tabular-nums" style={{ color: 'var(--coral)' }}>
+                {profile?.streak ?? 0} {(profile?.streak ?? 0) === 1 ? 'ден' : 'дни'}
+              </span>
+            </span>
+            <span>
+              Най-дълъг:&nbsp;
+              <span className="font-bold tabular-nums" style={{ color: 'var(--ink-2)' }}>
+                {bestStreak} {bestStreak === 1 ? 'ден' : 'дни'}
+              </span>
+            </span>
+          </div>
+        </div>
+        <div
+          className="rounded-2xl p-5"
+          style={{ background: 'var(--surface)', border: '1px solid var(--line)', boxShadow: 'var(--shadow-sm)' }}
+        >
+          <StreakCalendar activeDates={activeDates} />
+        </div>
+      </section>
 
       {/* Module progress */}
       <section className="mb-10">
