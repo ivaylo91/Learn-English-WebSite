@@ -41,7 +41,7 @@ export async function upsertWord(formData: FormData) {
 
   revalidatePath('/admin/rechnik');
   revalidatePath('/rechnik');
-  redirect('/admin/rechnik');
+  redirect('/admin/rechnik?saved=1');
 }
 
 export async function deleteWord(id: string) {
@@ -78,7 +78,7 @@ export async function upsertLesson(formData: FormData) {
 
   revalidatePath('/admin/gramatika');
   revalidatePath('/gramatika');
-  redirect('/admin/gramatika');
+  redirect('/admin/gramatika?saved=1');
 }
 
 export async function deleteLesson(id: string) {
@@ -115,7 +115,7 @@ export async function upsertClip(formData: FormData) {
 
   revalidatePath('/admin/slusham');
   revalidatePath('/slusham');
-  redirect('/admin/slusham');
+  redirect('/admin/slusham?saved=1');
 }
 
 export async function deleteClip(id: string) {
@@ -155,7 +155,7 @@ export async function upsertText(formData: FormData) {
 
   revalidatePath('/admin/chetene');
   revalidatePath('/chetene');
-  redirect('/admin/chetene');
+  redirect('/admin/chetene?saved=1');
 }
 
 export async function deleteText(id: string) {

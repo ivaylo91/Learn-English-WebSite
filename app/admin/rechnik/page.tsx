@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { Plus } from 'lucide-react';
 import type { VocabularyWord } from '@/lib/types/database';
 import { deleteWord } from '@/lib/actions/admin';
+import DeleteButton from '@/components/admin/DeleteButton';
+import SavedBanner from '@/components/admin/SavedBanner';
 
 export const metadata = { title: 'Речник | Админ' };
 
@@ -24,6 +26,7 @@ export default async function AdminVocabList() {
 
   return (
     <div>
+      <SavedBanner />
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-extrabold" style={{ fontFamily: 'var(--font-display)', color: 'var(--ink)' }}>
@@ -89,15 +92,7 @@ export default async function AdminVocabList() {
                       >
                         Редактирай
                       </Link>
-                      <form action={deleteWord.bind(null, w.id)}>
-                        <button
-                          type="submit"
-                          className="px-3 py-1 rounded-lg text-xs font-medium"
-                          style={{ background: 'var(--rose)', color: 'var(--rose-ink)', border: '1px solid #e8c4c4' }}
-                        >
-                          Изтрий
-                        </button>
-                      </form>
+                      <DeleteButton action={deleteWord.bind(null, w.id)} />
                     </div>
                   </td>
                 </tr>

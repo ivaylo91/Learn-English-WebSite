@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { Plus } from 'lucide-react';
 import type { ListeningClip } from '@/lib/types/database';
 import { deleteClip } from '@/lib/actions/admin';
+import DeleteButton from '@/components/admin/DeleteButton';
+import SavedBanner from '@/components/admin/SavedBanner';
 
 export const metadata = { title: 'Слушане | Админ' };
 
@@ -30,6 +32,7 @@ export default async function AdminListeningList() {
 
   return (
     <div>
+      <SavedBanner />
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-extrabold" style={{ fontFamily: 'var(--font-display)', color: 'var(--ink)' }}>
@@ -94,15 +97,7 @@ export default async function AdminListeningList() {
                       >
                         Редактирай
                       </Link>
-                      <form action={deleteClip.bind(null, c.id)}>
-                        <button
-                          type="submit"
-                          className="px-3 py-1 rounded-lg text-xs font-medium"
-                          style={{ background: 'var(--rose)', color: 'var(--rose-ink)', border: '1px solid #e8c4c4' }}
-                        >
-                          Изтрий
-                        </button>
-                      </form>
+                      <DeleteButton action={deleteClip.bind(null, c.id)} />
                     </div>
                   </td>
                 </tr>
