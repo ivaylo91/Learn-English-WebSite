@@ -121,7 +121,9 @@ export default function Navbar() {
               {displayName}
             </Link>
             <div className="flex items-center gap-2">
-              <UserAvatar name={displayName} />
+              <Link href="/profil" title="Профил" className="cursor-pointer">
+                <UserAvatar name={displayName} />
+              </Link>
               <button
                 onClick={handleSignOut}
                 className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors cursor-pointer"
@@ -186,10 +188,14 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="flex items-center justify-between px-1">
-                <div className="flex items-center gap-2">
+                <Link
+                  href="/profil"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
                   <UserAvatar name={displayName} />
                   <span className="text-sm font-medium text-zinc-700">{displayName}</span>
-                </div>
+                </Link>
                 <button
                   onClick={() => { setOpen(false); handleSignOut(); }}
                   className="flex items-center gap-1.5 text-sm text-zinc-500 hover:text-red-600 transition-colors cursor-pointer"
