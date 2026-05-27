@@ -4,6 +4,8 @@ import {
   ArrowRight, CheckCircle2, TrendingUp, Volume2,
 } from "lucide-react";
 import Badge from "@/components/ui/Badge";
+import OnboardingBanner from "@/components/OnboardingBanner";
+import { createClient } from "@/lib/supabase/server";
 
 /* ─── Flashcard hero visual ─── */
 function HeroCard() {
@@ -190,9 +192,29 @@ const stats = [
   { value: "3×",     label: "по-бързо" },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  let onboardingName: string | null = null;
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('name, xp')
+      .eq('id', user.id)
+      .single();
+    if (profile && profile.xp === 0) {
+      onboardingName =
+        profile.name ||
+        user.user_metadata?.name ||
+        user.email?.split('@')[0] ||
+        'приятел';
+    }
+  }
+
   return (
     <div className="overflow-hidden">
+      {onboardingName && <OnboardingBanner name={onboardingName} />}
 
       {/* ── Split-screen Hero ── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[100dvh] flex flex-col justify-center py-16">
