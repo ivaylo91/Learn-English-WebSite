@@ -15,9 +15,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase  = await createClient();
   const { data }  = await supabase.from('reading_texts').select('title, level, topic').eq('slug', slug).single();
   if (!data) return { title: 'Текст | Четене' };
+  const title = `${data.title} (${data.level}) | Четене`;
+  const description = `Текст за четене на ниво ${data.level} по темата „${data.topic}". Речник и въпроси за разбиране.`;
   return {
-    title: `${data.title} (${data.level}) | Четене`,
-    description: `Текст за четене на ниво ${data.level} по темата „${data.topic}". Речник и въпроси за разбиране.`,
+    title,
+    description,
+    alternates: { canonical: `/chetene/${slug}` },
+    openGraph:  { title, description, url: `/chetene/${slug}` },
   };
 }
 

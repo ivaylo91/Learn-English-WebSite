@@ -14,9 +14,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = await createClient();
   const { data } = await supabase.from('listening_clips').select('title, level, topic').eq('id', id).single();
   if (!data) return { title: 'Клип | Слушане' };
+  const title = `${data.title} (${data.level}) | Слушане`;
+  const description = `Аудио клип на ниво ${data.level} по темата „${data.topic}". Транскрипт и въпроси за разбиране.`;
   return {
-    title: `${data.title} (${data.level}) | Слушане`,
-    description: `Аудио клип на ниво ${data.level} по темата „${data.topic}". Транскрипт и въпроси за разбиране.`,
+    title,
+    description,
+    alternates: { canonical: `/slusham/${id}` },
+    openGraph:  { title, description, url: `/slusham/${id}` },
   };
 }
 

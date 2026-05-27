@@ -15,9 +15,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase  = await createClient();
   const { data }  = await supabase.from('grammar_lessons').select('title, level').eq('slug', slug).single();
   if (!data) return { title: 'Урок | Граматика' };
+  const title = `${data.title} (${data.level}) | Граматика`;
+  const description = `Урок по английска граматика: ${data.title}. Обяснение на български и интерактивно упражнение.`;
   return {
-    title: `${data.title} (${data.level}) | Граматика`,
-    description: `Урок по английска граматика: ${data.title}. Обяснение на български и интерактивно упражнение.`,
+    title,
+    description,
+    alternates: { canonical: `/gramatika/${slug}` },
+    openGraph:  { title, description, url: `/gramatika/${slug}` },
   };
 }
 
