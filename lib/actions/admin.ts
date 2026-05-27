@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/service';
 import type { Level } from '@/lib/types/database';
 
 async function requireAdmin() {
@@ -12,13 +13,14 @@ async function requireAdmin() {
   if (!user || !admins.includes(user.email ?? '')) {
     throw new Error('Unauthorized');
   }
-  return supabase;
+  // Return service client — bypasses RLS for content table writes
+  return createServiceClient();
 }
 
 // ── Vocabulary ─────────────────────────────────────────────────
 
 export async function upsertWord(formData: FormData) {
-  const supabase = await requireAdmin();
+  const db = await requireAdmin();
   const id = formData.get('id') as string | null;
 
   const payload = {
@@ -32,9 +34,9 @@ export async function upsertWord(formData: FormData) {
   };
 
   if (id) {
-    await supabase.from('vocabulary_words').update(payload).eq('id', id);
+    await db.from('vocabulary_words').update(payload).eq('id', id);
   } else {
-    await supabase.from('vocabulary_words').insert(payload);
+    await db.from('vocabulary_words').insert(payload);
   }
 
   revalidatePath('/admin/rechnik');
@@ -43,8 +45,8 @@ export async function upsertWord(formData: FormData) {
 }
 
 export async function deleteWord(id: string) {
-  const supabase = await requireAdmin();
-  await supabase.from('vocabulary_words').delete().eq('id', id);
+  const db = await requireAdmin();
+  await db.from('vocabulary_words').delete().eq('id', id);
   revalidatePath('/admin/rechnik');
   revalidatePath('/rechnik');
 }
@@ -52,26 +54,26 @@ export async function deleteWord(id: string) {
 // ── Grammar ────────────────────────────────────────────────────
 
 export async function upsertLesson(formData: FormData) {
-  const supabase = await requireAdmin();
+  const db = await requireAdmin();
   const id = formData.get('id') as string | null;
 
   let questions = [];
   try { questions = JSON.parse((formData.get('questions') as string) || '[]'); } catch { questions = []; }
 
   const payload = {
-    slug:         (formData.get('slug')         as string).trim(),
-    title:        (formData.get('title')        as string).trim(),
-    content_md:   (formData.get('content_md')   as string).trim(),
-    level:        (formData.get('level')        as Level),
-    category:     (formData.get('category')     as string).trim(),
-    order_index:  Number(formData.get('order_index') ?? 0),
+    slug:        (formData.get('slug')        as string).trim(),
+    title:       (formData.get('title')       as string).trim(),
+    content_md:  (formData.get('content_md')  as string).trim(),
+    level:       (formData.get('level')       as Level),
+    category:    (formData.get('category')    as string).trim(),
+    order_index: Number(formData.get('order_index') ?? 0),
     questions,
   };
 
   if (id) {
-    await supabase.from('grammar_lessons').update(payload).eq('id', id);
+    await db.from('grammar_lessons').update(payload).eq('id', id);
   } else {
-    await supabase.from('grammar_lessons').insert(payload);
+    await db.from('grammar_lessons').insert(payload);
   }
 
   revalidatePath('/admin/gramatika');
@@ -80,8 +82,8 @@ export async function upsertLesson(formData: FormData) {
 }
 
 export async function deleteLesson(id: string) {
-  const supabase = await requireAdmin();
-  await supabase.from('grammar_lessons').delete().eq('id', id);
+  const db = await requireAdmin();
+  await db.from('grammar_lessons').delete().eq('id', id);
   revalidatePath('/admin/gramatika');
   revalidatePath('/gramatika');
 }
@@ -89,26 +91,26 @@ export async function deleteLesson(id: string) {
 // ── Listening ──────────────────────────────────────────────────
 
 export async function upsertClip(formData: FormData) {
-  const supabase = await requireAdmin();
+  const db = await requireAdmin();
   const id = formData.get('id') as string | null;
 
   let questions = [];
   try { questions = JSON.parse((formData.get('questions') as string) || '[]'); } catch { questions = []; }
 
   const payload = {
-    title:            (formData.get('title')     as string).trim(),
-    audio_url:        (formData.get('audio_url') as string).trim(),
-    transcript:       (formData.get('transcript') as string).trim(),
-    level:            (formData.get('level')     as Level),
-    topic:            (formData.get('topic')     as string).trim(),
+    title:            (formData.get('title')            as string).trim(),
+    audio_url:        (formData.get('audio_url')        as string).trim(),
+    transcript:       (formData.get('transcript')       as string).trim(),
+    level:            (formData.get('level')            as Level),
+    topic:            (formData.get('topic')            as string).trim(),
     duration_seconds: Number(formData.get('duration_seconds') ?? 0),
     questions,
   };
 
   if (id) {
-    await supabase.from('listening_clips').update(payload).eq('id', id);
+    await db.from('listening_clips').update(payload).eq('id', id);
   } else {
-    await supabase.from('listening_clips').insert(payload);
+    await db.from('listening_clips').insert(payload);
   }
 
   revalidatePath('/admin/slusham');
@@ -117,8 +119,8 @@ export async function upsertClip(formData: FormData) {
 }
 
 export async function deleteClip(id: string) {
-  const supabase = await requireAdmin();
-  await supabase.from('listening_clips').delete().eq('id', id);
+  const db = await requireAdmin();
+  await db.from('listening_clips').delete().eq('id', id);
   revalidatePath('/admin/slusham');
   revalidatePath('/slusham');
 }
@@ -126,29 +128,29 @@ export async function deleteClip(id: string) {
 // ── Reading ────────────────────────────────────────────────────
 
 export async function upsertText(formData: FormData) {
-  const supabase = await requireAdmin();
+  const db = await requireAdmin();
   const id = formData.get('id') as string | null;
 
   let questions = [];
   let vocabulary: { en: string; bg: string }[] = [];
-  try { questions = JSON.parse((formData.get('questions') as string) || '[]'); } catch { questions = []; }
+  try { questions  = JSON.parse((formData.get('questions')  as string) || '[]'); } catch { questions = []; }
   try { vocabulary = JSON.parse((formData.get('vocabulary') as string) || '[]'); } catch { vocabulary = []; }
 
   const payload = {
-    slug:                  (formData.get('slug')    as string).trim(),
-    title:                 (formData.get('title')   as string).trim(),
-    body_md:               (formData.get('body_md') as string).trim(),
-    level:                 (formData.get('level')   as Level),
-    topic:                 (formData.get('topic')   as string).trim(),
-    reading_time_minutes:  Number(formData.get('reading_time_minutes') ?? 5),
+    slug:                 (formData.get('slug')    as string).trim(),
+    title:                (formData.get('title')   as string).trim(),
+    body_md:              (formData.get('body_md') as string).trim(),
+    level:                (formData.get('level')   as Level),
+    topic:                (formData.get('topic')   as string).trim(),
+    reading_time_minutes: Number(formData.get('reading_time_minutes') ?? 5),
     questions,
     vocabulary,
   };
 
   if (id) {
-    await supabase.from('reading_texts').update(payload).eq('id', id);
+    await db.from('reading_texts').update(payload).eq('id', id);
   } else {
-    await supabase.from('reading_texts').insert(payload);
+    await db.from('reading_texts').insert(payload);
   }
 
   revalidatePath('/admin/chetene');
@@ -157,8 +159,8 @@ export async function upsertText(formData: FormData) {
 }
 
 export async function deleteText(id: string) {
-  const supabase = await requireAdmin();
-  await supabase.from('reading_texts').delete().eq('id', id);
+  const db = await requireAdmin();
+  await db.from('reading_texts').delete().eq('id', id);
   revalidatePath('/admin/chetene');
   revalidatePath('/chetene');
 }
