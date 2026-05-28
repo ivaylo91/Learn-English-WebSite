@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
-import { createServiceClient } from '@/lib/supabase/service';
 import Badge from '@/components/ui/Badge';
 import { Trophy, Flame, ChevronLeft, Medal } from 'lucide-react';
 import type { Metadata } from 'next';
@@ -54,25 +53,14 @@ export default async function ToplistaPage() {
 
   if (!user) redirect('/login?next=/napredak/toplista');
 
-  // Fetch leaderboard using service role (bypasses RLS)
-  let rows: Row[] = [];
-  try {
-    const sb = createServiceClient();
-    const { data } = await sb
-      .from('profiles')
-      .select('id, name, level, xp, streak')
-      .order('xp', { ascending: false })
-      .limit(50);
-    rows = (data ?? []) as Row[];
-  } catch {
-    // Service role key not configured — fall back to current user only
-    const { data } = await supabase
-      .from('profiles')
-      .select('id, name, level, xp, streak')
-      .eq('id', user.id)
-      .single();
-    if (data) rows = [data as Row];
-  }
+  // RLS policy "Authenticated leaderboard select" allows any logged-in user to read all profiles
+  const { data } = await supabase
+    .from('profiles')
+    .select('id, name, level, xp, streak')
+    .order('xp', { ascending: false })
+    .limit(50);
+
+  const rows: Row[] = (data ?? []) as Row[];
 
   const myRank = rows.findIndex(r => r.id === user.id) + 1; // 0 if not found
   const podium = rows.slice(0, 3);
