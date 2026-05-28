@@ -3,6 +3,7 @@ import { TrendingUp, Flame, Trophy, Target, BookMarked, PenLine, Headphones, Boo
 import { createClient } from '@/lib/supabase/server';
 import Badge from '@/components/ui/Badge';
 import StreakCalendar from '@/components/napredak/StreakCalendar';
+import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -156,11 +157,21 @@ export default async function NapredakPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
 
-      <div className="mb-10">
-        <h1 className="text-3xl font-extrabold mb-1" style={{ fontFamily: 'var(--font-display)', color: 'var(--ink)' }}>
-          Моят напредък
-        </h1>
-        <p style={{ color: 'var(--muted)' }}>Проследявай обучението си и поддържай темпото.</p>
+      <div className="flex items-start justify-between gap-4 mb-10">
+        <div>
+          <h1 className="text-3xl font-extrabold mb-1" style={{ fontFamily: 'var(--font-display)', color: 'var(--ink)' }}>
+            Моят напредък
+          </h1>
+          <p style={{ color: 'var(--muted)' }}>Проследявай обучението си и поддържай темпото.</p>
+        </div>
+        <Link
+          href="/napredak/toplista"
+          className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5"
+          style={{ background: 'var(--butter)', color: 'var(--butter-ink)', border: '1px solid #e8d8a8' }}
+        >
+          <Trophy className="w-3.5 h-3.5" />
+          Класация
+        </Link>
       </div>
 
       {/* KPIs */}
