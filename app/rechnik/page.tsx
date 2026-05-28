@@ -48,7 +48,7 @@ export default async function RechnikPage() {
       {/* Study CTA */}
       <div
         className="flex items-center justify-between mb-8 p-5 rounded-2xl"
-        style={{ background: "var(--coral-soft)", border: "1px solid #f4c8a8" }}
+        style={{ background: "var(--coral-soft)", border: "1px solid var(--line)" }}
       >
         <div>
           <p className="font-bold text-sm" style={{ color: "var(--ink)" }}>Готов ли си за повторение?</p>
