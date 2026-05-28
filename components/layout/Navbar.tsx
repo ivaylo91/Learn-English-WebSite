@@ -7,6 +7,7 @@ import { Menu, X, LogOut, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 
 const navLinks = [
   { href: "/rechnik",   label: "Речник"    },
@@ -55,7 +56,7 @@ export default function Navbar() {
     <header
       className="sticky top-0 z-40 backdrop-blur-md"
       style={{
-        background: "rgba(251,245,238,0.92)",
+        background: "var(--navbar-bg)",
         borderBottom: "1px solid var(--line)",
       }}
     >
@@ -118,6 +119,7 @@ export default function Navbar() {
         {/* Desktop CTA — logged out */}
         {!user && (
           <div className="hidden md:flex items-center gap-2 shrink-0">
+            <ThemeToggle />
             <Link
               href="/login"
               className="px-3.5 py-1.5 text-sm font-medium transition-colors cursor-pointer rounded-xl hover:bg-[var(--bg-2)]"
@@ -138,6 +140,7 @@ export default function Navbar() {
         {/* Desktop — logged in */}
         {user && (
           <div className="hidden md:flex items-center gap-3 shrink-0">
+            <ThemeToggle />
             <Link
               href="/napredak"
               className={cn(
@@ -223,6 +226,7 @@ export default function Navbar() {
                 >
                   Регистрация
                 </Link>
+                <ThemeToggle />
               </div>
             ) : (
               <div className="flex items-center justify-between px-1">
@@ -234,14 +238,17 @@ export default function Navbar() {
                   <UserAvatar name={displayName} />
                   <span className="text-sm font-medium" style={{ color: "var(--ink)" }}>{displayName}</span>
                 </Link>
-                <button
-                  onClick={() => { setOpen(false); handleSignOut(); }}
-                  className="flex items-center gap-1.5 text-sm transition-colors cursor-pointer"
-                  style={{ color: "var(--muted)" }}
-                >
-                  <LogOut className="w-4 h-4" />
-                  Изход
-                </button>
+                <div className="flex items-center gap-1">
+                  <ThemeToggle />
+                  <button
+                    onClick={() => { setOpen(false); handleSignOut(); }}
+                    className="flex items-center gap-1.5 text-sm transition-colors cursor-pointer"
+                    style={{ color: "var(--muted)" }}
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Изход
+                  </button>
+                </div>
               </div>
             )}
           </div>

@@ -42,13 +42,47 @@
   --font-body:    var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   --font-code:    var(--font-mono), ui-monospace, monospace;
 
+  --navbar-bg: rgba(251,245,238,0.92);
+
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out:   cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+html.dark {
+  --bg:      #1c1410;
+  --bg-2:    #251a13;
+  --surface: #2e2018;
+  --ink:     #f0e8de;
+  --ink-2:   #c8b5a0;
+  --muted:   #8a7567;
+  --line:    #3d2d20;
+  --line-2:  #4d3a28;
+
+  --coral-soft: #3d1e0c;
+  --coral-ink:  #f4b090;
+  --peach:      #3d1e0c;
+  --sage:       #0d2414;
+  --sage-ink:   #90c89c;
+  --sky:        #0c1e2e;
+  --sky-ink:    #7ab8e0;
+  --lavender:   #1a1530;
+  --lav-ink:    #b0a4e0;
+  --butter:     #261c08;
+  --butter-ink: #dcc070;
+  --rose:       #280e0e;
+  --rose-ink:   #e0a0a0;
+
+  --shadow-sm: 0 1px 0 rgba(0,0,0,.2),  0 1px 2px rgba(0,0,0,.2);
+  --shadow-md: 0 1px 0 rgba(0,0,0,.2),  0 8px 22px -10px rgba(0,0,0,.5);
+  --shadow-lg: 0 1px 0 rgba(0,0,0,.25), 0 22px 50px -22px rgba(0,0,0,.6);
+
+  --navbar-bg: rgba(28,20,16,0.92);
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 
-html { -webkit-font-smoothing: antialiased; }
+html { -webkit-font-smoothing: antialiased; color-scheme: light; }
+html.dark { color-scheme: dark; }
 
 body {
   font-family: var(--font-body);

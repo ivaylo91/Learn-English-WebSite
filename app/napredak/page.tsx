@@ -3,6 +3,7 @@ import { TrendingUp, Flame, Trophy, Target, BookMarked, PenLine, Headphones, Boo
 import { createClient } from '@/lib/supabase/server';
 import Badge from '@/components/ui/Badge';
 import StreakCalendar from '@/components/napredak/StreakCalendar';
+import StreakProtectionBanner from '@/components/StreakProtectionBanner';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
@@ -69,7 +70,7 @@ export default async function NapredakPage() {
     activityRes,
     activityDatesRes,
   ] = await Promise.all([
-    supabase.from('profiles').select('xp, streak, level').eq('id', user.id).single(),
+    supabase.from('profiles').select('xp, streak, level, last_active_at').eq('id', user.id).single(),
     supabase.from('vocabulary_words').select('id', { count: 'exact', head: true }),
     supabase.from('user_word_progress').select('status').eq('user_id', user.id),
     supabase.from('grammar_lessons').select('id', { count: 'exact', head: true }),
@@ -110,7 +111,9 @@ export default async function NapredakPage() {
   }
   const bestStreak = longestStreak(activeDates);
 
-  const profile        = profileRes.data;
+  const profile        = profileRes.data as { xp: number; streak: number; level: string; last_active_at: string | null } | null;
+  const todayUTC       = new Date().toISOString().slice(0, 10);
+  const streakAtRisk   = (profile?.streak ?? 0) > 0 && (profile?.last_active_at?.slice(0, 10) ?? '') < todayUTC;
   const vocabTotal     = vocabTotalRes.count ?? 0;
   const vocabRows      = vocabProgressRes.data ?? [];
   const vocabStudied   = vocabRows.length;
@@ -155,6 +158,8 @@ export default async function NapredakPage() {
   ];
 
   return (
+    <>
+    {streakAtRisk && profile && <StreakProtectionBanner streak={profile.streak} />}
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
 
       <div className="flex items-start justify-between gap-4 mb-10">
@@ -312,5 +317,6 @@ export default async function NapredakPage() {
       </section>
 
     </div>
+    </>
   );
 }

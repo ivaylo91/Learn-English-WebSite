@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
 const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -69,18 +70,31 @@ export const metadata: Metadata = {
   },
 };
 
+const themeScript = `
+try {
+  var s = localStorage.getItem('theme');
+  var p = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  if ((s || p) === 'dark') document.documentElement.classList.add('dark');
+} catch(e) {}
+`.trim();
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="bg" className={`${bricolage.variable} ${manrope.variable} ${jetbrainsMono.variable}`}>
+    <html lang="bg" className={`${bricolage.variable} ${manrope.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body
         className="min-h-screen flex flex-col antialiased"
-        style={{ fontFamily: "var(--font-sans), system-ui, sans-serif", background: "#fbf5ee" }}
+        style={{ fontFamily: "var(--font-sans), system-ui, sans-serif", background: "var(--bg)" }}
       >
-        <AuthProvider>
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <Navbar />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

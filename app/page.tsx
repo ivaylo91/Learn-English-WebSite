@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import OnboardingBanner from "@/components/OnboardingBanner";
+import StreakProtectionBanner from "@/components/StreakProtectionBanner";
 import { createClient } from "@/lib/supabase/server";
 
 /* ─── Flashcard hero visual ─── */
@@ -235,7 +236,7 @@ export default async function HomePage() {
   // Fetch profile (if logged in) + word of the day in parallel
   const [profileRes, wordRes] = await Promise.all([
     user
-      ? supabase.from('profiles').select('name, xp').eq('id', user.id).single()
+      ? supabase.from('profiles').select('name, xp, streak, last_active_at').eq('id', user.id).single()
       : Promise.resolve({ data: null }),
     wordCount > 0
       ? supabase
@@ -250,20 +251,30 @@ export default async function HomePage() {
   const wordOfDay = wordRes.data as WordOfDay | null;
 
   let onboardingName: string | null = null;
+  let streakAtRisk = false;
   if (user) {
-    const profile = profileRes.data;
-    if (profile && profile.xp === 0) {
-      onboardingName =
-        profile.name ||
-        user.user_metadata?.name ||
-        user.email?.split('@')[0] ||
-        'приятел';
+    const profile = profileRes.data as { name: string | null; xp: number; streak: number; last_active_at: string | null } | null;
+    if (profile) {
+      if (profile.xp === 0) {
+        onboardingName =
+          profile.name ||
+          user.user_metadata?.name ||
+          user.email?.split('@')[0] ||
+          'приятел';
+      }
+      const todayUTC = new Date().toISOString().slice(0, 10);
+      streakAtRisk =
+        profile.streak > 0 &&
+        (profile.last_active_at?.slice(0, 10) ?? '') < todayUTC;
     }
   }
 
   return (
     <div className="overflow-hidden">
       {onboardingName && <OnboardingBanner name={onboardingName} />}
+      {streakAtRisk && profileRes.data && (
+        <StreakProtectionBanner streak={(profileRes.data as { streak: number }).streak} />
+      )}
 
       {/* ── Split-screen Hero ── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[100dvh] flex flex-col justify-center py-16">
