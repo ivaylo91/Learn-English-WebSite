@@ -6,17 +6,26 @@ import { ACHIEVEMENT_META, DEFAULT_META } from './meta';
 export default async function AchievementShelf({ userId }: { userId: string }) {
   const supabase = await createClient();
 
-  const [allRes, unlockedRes] = await Promise.all([
-    supabase.from('achievements').select('*').order('sort_order'),
-    supabase.from('user_achievements')
-      .select('achievement_key, unlocked_at')
-      .eq('user_id', userId),
-  ]);
+  let all: Achievement[] = [];
+  let unlockedMap = new Map<string, string>();
 
-  const all = (allRes.data ?? []) as Achievement[];
-  const unlockedMap = new Map(
-    (unlockedRes.data ?? []).map(r => [r.achievement_key, r.unlocked_at])
-  );
+  try {
+    const [allRes, unlockedRes] = await Promise.all([
+      supabase.from('achievements').select('*').order('sort_order'),
+      supabase.from('user_achievements')
+        .select('achievement_key, unlocked_at')
+        .eq('user_id', userId),
+    ]);
+    all = (allRes.data ?? []) as Achievement[];
+    unlockedMap = new Map(
+      (unlockedRes.data ?? []).map(r => [r.achievement_key, r.unlocked_at])
+    );
+  } catch {
+    // Migration not yet run — render nothing
+    return null;
+  }
+
+  if (all.length === 0) return null;
 
   const unlockedCount = unlockedMap.size;
 

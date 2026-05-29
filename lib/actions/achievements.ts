@@ -10,6 +10,7 @@ export interface UnlockedAchievement {
 }
 
 export async function checkAndUnlockAchievements(userId: string): Promise<UnlockedAchievement[]> {
+  try {
   const supabase = await createClient();
 
   // Verify caller owns this userId
@@ -98,4 +99,8 @@ export async function checkAndUnlockAchievements(userId: string): Promise<Unlock
   }
 
   return (rewardRows ?? []) as UnlockedAchievement[];
+  } catch {
+    // Tables not yet created (migration pending) — fail silently
+    return [];
+  }
 }
