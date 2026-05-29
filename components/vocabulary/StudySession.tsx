@@ -4,7 +4,9 @@ import { useState } from 'react';
 import type { UserWordProgress } from '@/lib/types/database';
 import { reviewWord } from '@/lib/db/vocabulary';
 import { recordActivity } from '@/lib/db/activity';
+import { checkAndUnlockAchievements, type UnlockedAchievement } from '@/lib/actions/achievements';
 import FlashCard from './FlashCard';
+import AchievementToast from '@/components/achievements/AchievementToast';
 import { Trophy, BookMarked, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
@@ -14,10 +16,11 @@ interface StudySessionProps {
 }
 
 export default function StudySession({ userId, dueWords }: StudySessionProps) {
-  const [index, setIndex]         = useState(0);
-  const [results, setResults]     = useState<{ quality: number }[]>([]);
-  const [submitting, setSubmitting] = useState(false);
-  const [finished, setFinished]   = useState(false);
+  const [index, setIndex]           = useState(0);
+  const [results, setResults]       = useState<{ quality: number }[]>([]);
+  const [submitting, setSubmitting]  = useState(false);
+  const [finished, setFinished]     = useState(false);
+  const [newAchievements, setNewAchievements] = useState<UnlockedAchievement[]>([]);
 
   const current = dueWords[index];
 
@@ -35,6 +38,8 @@ export default function StudySession({ userId, dueWords }: StudySessionProps) {
         words_reviewed: dueWords.length,
         passed: newResults.filter(r => r.quality >= 3).length,
       });
+      const unlocked = await checkAndUnlockAchievements(userId);
+      if (unlocked.length > 0) setNewAchievements(unlocked);
       setFinished(true);
     } else {
       setIndex(i => i + 1);
@@ -72,6 +77,8 @@ export default function StudySession({ userId, dueWords }: StudySessionProps) {
     const passed = results.filter(r => r.quality >= 3).length;
     const xp = passed * 5;
     return (
+      <>
+      <AchievementToast achievements={newAchievements} />
       <div className="flex flex-col items-center justify-center py-16 text-center max-w-sm mx-auto">
         <div
           className="w-20 h-20 rounded-3xl flex items-center justify-center mb-6"
@@ -116,12 +123,15 @@ export default function StudySession({ userId, dueWords }: StudySessionProps) {
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
+      </>
     );
   }
 
   if (!current?.vocabulary_words) return null;
 
   return (
+    <>
+    <AchievementToast achievements={newAchievements} />
     <FlashCard
       word={current.vocabulary_words}
       cardNumber={index + 1}
@@ -129,5 +139,6 @@ export default function StudySession({ userId, dueWords }: StudySessionProps) {
       loading={submitting}
       onRate={handleRate}
     />
+    </>
   );
 }

@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server';
 import Badge from '@/components/ui/Badge';
 import StreakCalendar from '@/components/napredak/StreakCalendar';
 import StreakProtectionBanner from '@/components/StreakProtectionBanner';
+import AchievementShelf from '@/components/achievements/AchievementShelf';
+import { checkAndUnlockAchievements } from '@/lib/actions/achievements';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
@@ -110,6 +112,9 @@ export default async function NapredakPage() {
     return best;
   }
   const bestStreak = longestStreak(activeDates);
+
+  // Check & unlock any newly earned achievements (silent — no toast on this page)
+  await checkAndUnlockAchievements(user.id);
 
   const profile        = profileRes.data as { xp: number; streak: number; level: string; last_active_at: string | null } | null;
   const todayUTC       = new Date().toISOString().slice(0, 10);
@@ -266,6 +271,11 @@ export default async function NapredakPage() {
             );
           })}
         </div>
+      </section>
+
+      {/* Achievements */}
+      <section className="mb-10">
+        <AchievementShelf userId={user.id} />
       </section>
 
       {/* Recent activity */}

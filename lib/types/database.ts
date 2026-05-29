@@ -119,6 +119,21 @@ export interface UserActivity {
   created_at: string;
 }
 
+export interface Achievement {
+  key: string;
+  title_bg: string;
+  description_bg: string;
+  xp_reward: number;
+  sort_order: number;
+}
+
+export interface UserAchievement {
+  id: string;
+  user_id: string;
+  achievement_key: string;
+  unlocked_at: string;
+}
+
 // ── Supabase Database type map ────────────────────────────────
 
 export type Database = {
