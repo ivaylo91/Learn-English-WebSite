@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import ProfileForm from './ProfileForm';
 import { Flame, Trophy, TrendingUp, ChevronLeft, KeyRound, Target } from 'lucide-react';
+import { type DailyGoal } from '@/lib/actions/goals';
 import Badge from '@/components/ui/Badge';
 import type { Metadata } from 'next';
 import type { Level } from '@/lib/types/database';
@@ -54,7 +55,7 @@ export default async function ProfilPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('name, level, xp, streak, created_at, email_reminders')
+    .select('name, level, xp, streak, created_at, email_reminders, daily_goal')
     .eq('id', user.id)
     .single();
 
@@ -64,6 +65,7 @@ export default async function ProfilPage() {
   const streak         = profile?.streak         ?? 0;
   const joinedAt       = profile?.created_at     ?? user.created_at;
   const emailReminders = profile?.email_reminders ?? true;
+  const dailyGoal      = (profile?.daily_goal    ?? 'standard') as DailyGoal;
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
@@ -127,7 +129,7 @@ export default async function ProfilPage() {
         style={{ background: "var(--surface)", border: "1px solid var(--line)", boxShadow: "var(--shadow-sm)" }}
       >
         <h3 className="text-base font-bold mb-5" style={{ color: "var(--ink)" }}>Редактирай профила</h3>
-        <ProfileForm userId={user.id} initName={name} initLevel={level} initEmailReminders={emailReminders} />
+        <ProfileForm userId={user.id} initName={name} initLevel={level} initEmailReminders={emailReminders} initDailyGoal={dailyGoal} />
       </div>
 
       {/* Security */}

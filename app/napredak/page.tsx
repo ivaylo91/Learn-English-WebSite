@@ -5,7 +5,9 @@ import Badge from '@/components/ui/Badge';
 import StreakCalendar from '@/components/napredak/StreakCalendar';
 import StreakProtectionBanner from '@/components/StreakProtectionBanner';
 import AchievementShelf from '@/components/achievements/AchievementShelf';
+import DailyGoalCard from '@/components/goals/DailyGoalCard';
 import { checkAndUnlockAchievements } from '@/lib/actions/achievements';
+import { computeTodayProgress, type DailyGoal } from '@/lib/actions/goals';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
@@ -77,8 +79,9 @@ export default async function NapredakPage() {
     writingProgressRes,
     activityRes,
     activityDatesRes,
+    todayActivityRes,
   ] = await Promise.all([
-    supabase.from('profiles').select('xp, streak, level, last_active_at').eq('id', user.id).single(),
+    supabase.from('profiles').select('xp, streak, level, last_active_at, daily_goal').eq('id', user.id).single(),
     supabase.from('vocabulary_words').select('id', { count: 'exact', head: true }),
     supabase.from('user_word_progress').select('status').eq('user_id', user.id),
     supabase.from('grammar_lessons').select('id', { count: 'exact', head: true }),
@@ -101,6 +104,12 @@ export default async function NapredakPage() {
       .eq('user_id', user.id)
       .gte('created_at', new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString())
       .order('created_at', { ascending: true }),
+    // Today's activity for daily goal progress
+    supabase
+      .from('user_activity')
+      .select('module, action, metadata')
+      .eq('user_id', user.id)
+      .gte('created_at', `${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`),
   ]);
 
   // Unique activity dates (YYYY-MM-DD, UTC) for streak calendar
@@ -124,7 +133,7 @@ export default async function NapredakPage() {
   // Check & unlock any newly earned achievements (silent — no toast on this page)
   await checkAndUnlockAchievements(user.id);
 
-  const profile        = profileRes.data as { xp: number; streak: number; level: string; last_active_at: string | null } | null;
+  const profile        = profileRes.data as { xp: number; streak: number; level: string; last_active_at: string | null; daily_goal?: string } | null;
   const todayUTC       = new Date().toISOString().slice(0, 10);
   const streakAtRisk   = (profile?.streak ?? 0) > 0 && (profile?.last_active_at?.slice(0, 10) ?? '') < todayUTC;
   const vocabTotal     = vocabTotalRes.count ?? 0;
@@ -141,6 +150,10 @@ export default async function NapredakPage() {
   const writingDone    = (writingProgressRes.data ?? []).filter(r => r.completed).length;
   const activity       = activityRes.data ?? [];
   const totalDone      = grammarDone + listeningDone + readingDone + writingDone;
+  const dailyGoal      = ((profile?.daily_goal ?? 'standard') as DailyGoal);
+  const todayProgress  = computeTodayProgress(
+    (todayActivityRes.data ?? []) as { module: string; action: string; metadata: Record<string, unknown> }[]
+  );
 
   const kpis = [
     { label: 'Дни поред',  value: String(profile?.streak ?? 0), icon: Flame,      bg: 'var(--peach)',       color: 'var(--coral-ink)' },
@@ -220,6 +233,14 @@ export default async function NapredakPage() {
           </div>
         ))}
       </div>
+
+      {/* Daily goal */}
+      <section className="mb-10">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold" style={{ color: 'var(--ink)' }}>Дневна цел</h2>
+        </div>
+        <DailyGoalCard goal={dailyGoal} today={todayProgress} />
+      </section>
 
       {/* Streak calendar */}
       <section className="mb-10">

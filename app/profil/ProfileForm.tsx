@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Save, CheckCircle2, AlertCircle, Bell, BellOff } from 'lucide-react';
+import { GOAL_TARGETS, type DailyGoal } from '@/lib/actions/goals';
 import { createClient } from '@/lib/supabase/client';
 import type { Level } from '@/lib/types/database';
 
@@ -22,13 +23,15 @@ interface Props {
   initName:           string;
   initLevel:          Level;
   initEmailReminders: boolean;
+  initDailyGoal:      DailyGoal;
 }
 
-export default function ProfileForm({ userId, initName, initLevel, initEmailReminders }: Props) {
+export default function ProfileForm({ userId, initName, initLevel, initEmailReminders, initDailyGoal }: Props) {
   const router  = useRouter();
   const [name,           setName]           = useState(initName);
   const [level,          setLevel]          = useState<Level>(initLevel);
   const [emailReminders, setEmailReminders] = useState(initEmailReminders);
+  const [dailyGoal,      setDailyGoal]      = useState<DailyGoal>(initDailyGoal);
   const [loading,        setLoading]        = useState(false);
   const [status,         setStatus]         = useState<'idle' | 'success' | 'error'>('idle');
 
@@ -43,7 +46,7 @@ export default function ProfileForm({ userId, initName, initLevel, initEmailRemi
 
     const { error: dbErr } = await supabase
       .from('profiles')
-      .update({ name: trimmed, level, email_reminders: emailReminders })
+      .update({ name: trimmed, level, email_reminders: emailReminders, daily_goal: dailyGoal })
       .eq('id', userId);
 
     if (dbErr) {
@@ -138,6 +141,31 @@ export default function ProfileForm({ userId, initName, initLevel, initEmailRemi
             style={{ transform: emailReminders ? 'translateX(20px)' : 'translateX(0)' }}
           />
         </button>
+      </div>
+
+      {/* Daily goal picker */}
+      <div className="flex flex-col gap-2">
+        <p className="text-sm font-semibold" style={{ color: 'var(--ink-2)' }}>Дневна цел</p>
+        <div className="grid grid-cols-3 gap-2">
+          {(Object.entries(GOAL_TARGETS) as [DailyGoal, typeof GOAL_TARGETS[DailyGoal]][]).map(([key, t]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setDailyGoal(key)}
+              className="flex flex-col items-start gap-0.5 px-3 py-2.5 rounded-xl text-left transition-all cursor-pointer"
+              style={
+                dailyGoal === key
+                  ? { background: 'var(--coral-soft)', border: '2px solid var(--coral)', color: 'var(--coral-ink)' }
+                  : { background: 'var(--bg-2)', border: '1px solid var(--line)', color: 'var(--muted)' }
+              }
+            >
+              <span className="text-sm font-bold" style={{ color: dailyGoal === key ? 'var(--coral-ink)' : 'var(--ink)' }}>
+                {t.label}
+              </span>
+              <span className="text-[11px] leading-tight">{t.desc}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Feedback */}
