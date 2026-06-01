@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
-import { Plus } from 'lucide-react';
+import { Plus, Upload } from 'lucide-react';
 import type { VocabularyWord } from '@/lib/types/database';
 import { deleteWord } from '@/lib/actions/admin';
 import DeleteButton from '@/components/admin/DeleteButton';
@@ -36,14 +36,24 @@ export default async function AdminVocabList() {
             {words?.length ?? 0} думи
           </p>
         </div>
-        <Link
-          href="/admin/rechnik/new"
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white"
-          style={{ background: 'var(--coral)' }}
-        >
-          <Plus className="w-4 h-4" />
-          Нова дума
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/rechnik/import"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold"
+            style={{ background: 'var(--bg-2)', color: 'var(--ink-2)', border: '1px solid var(--line)' }}
+          >
+            <Upload className="w-4 h-4" />
+            Масов импорт
+          </Link>
+          <Link
+            href="/admin/rechnik/new"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white"
+            style={{ background: 'var(--coral)' }}
+          >
+            <Plus className="w-4 h-4" />
+            Нова дума
+          </Link>
+        </div>
       </div>
 
       <div

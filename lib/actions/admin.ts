@@ -51,6 +51,74 @@ export async function deleteWord(id: string) {
   revalidatePath('/rechnik');
 }
 
+export interface VocabImportRow {
+  word_en:    string;
+  word_bg:    string;
+  phonetic:   string;
+  level:      string;
+  category:   string;
+  example_en: string;
+  example_bg: string;
+}
+
+export interface ImportResult {
+  imported: number;
+  errors:   { index: number; message: string }[];
+}
+
+export async function importVocabularyWords(rows: VocabImportRow[]): Promise<ImportResult> {
+  const db = await requireAdmin();
+
+  const VALID_LEVELS = new Set(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']);
+  const BATCH = 100;
+
+  let imported = 0;
+  const errors: { index: number; message: string }[] = [];
+
+  // Validate all rows first
+  const validRows: (VocabImportRow & { _idx: number })[] = [];
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    if (!r.word_en?.trim()) { errors.push({ index: i + 1, message: 'word_en е задължително' }); continue; }
+    if (!r.word_bg?.trim()) { errors.push({ index: i + 1, message: 'word_bg е задължително' }); continue; }
+    if (!VALID_LEVELS.has(r.level?.trim().toUpperCase())) {
+      errors.push({ index: i + 1, message: `Невалидно ниво "${r.level}" (трябва A1–C2)` }); continue;
+    }
+    if (!r.category?.trim()) { errors.push({ index: i + 1, message: 'category е задължително' }); continue; }
+    validRows.push({ ...r, _idx: i + 1 });
+  }
+
+  // Insert in batches
+  for (let start = 0; start < validRows.length; start += BATCH) {
+    const batch = validRows.slice(start, start + BATCH).map(r => ({
+      word_en:    r.word_en.trim(),
+      word_bg:    r.word_bg.trim(),
+      phonetic:   r.phonetic?.trim() || null,
+      level:      r.level.trim().toUpperCase() as Level,
+      category:   r.category.trim(),
+      example_en: r.example_en?.trim() || null,
+      example_bg: r.example_bg?.trim() || null,
+    }));
+
+    const { error } = await db.from('vocabulary_words').insert(batch);
+    if (error) {
+      // Log batch-level error but continue with other batches
+      batch.forEach((_, bi) => {
+        errors.push({ index: validRows[start + bi]._idx, message: error.message });
+      });
+    } else {
+      imported += batch.length;
+    }
+  }
+
+  if (imported > 0) {
+    revalidatePath('/admin/rechnik');
+    revalidatePath('/rechnik');
+  }
+
+  return { imported, errors };
+}
+
 // ── Grammar ────────────────────────────────────────────────────
 
 export async function upsertLesson(formData: FormData) {
