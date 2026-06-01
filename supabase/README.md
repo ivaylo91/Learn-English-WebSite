@@ -6,18 +6,23 @@ Copy `.env.local.example` to `.env.local` and fill in real values:
 
 | Variable | Where to find it |
 |---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Dashboard → Project Settings → API → Project URL (no trailing slash, no `/rest/v1/`) |
+| `NEXT_PUBLIC_SUPABASE_URL` | Dashboard → Project Settings → API → Project URL (no trailing slash) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Dashboard → Project Settings → API → `anon` `public` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Dashboard → Project Settings → API → `service_role` `secret` |
-| `ADMIN_EMAILS` | Comma-separated list of emails that have admin access |
+| `ADMIN_EMAILS` | Comma-separated list of admin emails |
+| `NEXT_PUBLIC_SITE_URL` | Your deployed URL, e.g. `https://uchi-angliyski.vercel.app` |
+| `RESEND_API_KEY` | resend.com → API Keys |
+| `RESEND_FROM_EMAIL` | e.g. `Учи Английски <noreply@your-domain.com>` |
+| `CRON_SECRET` | `openssl rand -hex 32` |
+| `UNSUBSCRIBE_SECRET` | `openssl rand -hex 32` |
 
-**Never commit `.env.local` or the real service role key to git.**
+**Never commit `.env.local` to git.**
 
 ---
 
 ## 2. Run Migrations (SQL Editor)
 
-Open **Supabase Dashboard → SQL Editor** and run the files in order:
+Open **Supabase Dashboard → SQL Editor** and run the files in this order:
 
 ### Step 1 — Initial schema
 ```
@@ -37,37 +42,80 @@ supabase/migrations/003_content_progress.sql
 ```
 Creates `user_content_progress` table, adds `vocabulary JSONB` to `reading_texts`.
 
+### Step 4 — Leaderboard RLS policy
+```
+supabase/migrations/004_leaderboard_policy.sql
+```
+Allows public read of profiles for the leaderboard (limited columns).
+
+### Step 5 — Achievements system
+```
+supabase/migrations/005_achievements.sql
+```
+Creates `achievements` and `user_achievements` tables with 16 seeded achievements (XP milestones, streaks, module firsts).
+
+### Step 6 — Email reminders opt-out
+```
+supabase/migrations/006_email_reminders.sql
+```
+Adds `email_reminders BOOLEAN` column to `profiles` (default `true`).
+
+### Step 7 — Writing exercises module
+```
+supabase/migrations/007_writing.sql
+```
+Creates `writing_exercises` and `user_writing_progress` tables. Also extends the `user_activity` module CHECK to include `'writing'`.
+
 ---
 
 ## 3. Seed Content (SQL Editor)
 
 Run these after all migrations are applied:
 
-### Step 4 — Vocabulary words (40 words, A1–C1)
+### Vocabulary words (~52 words, A1–C1)
 ```
 supabase/seed.sql
 ```
+Also includes the 14 grammar lesson stubs (slugs + titles, no content yet).
 
-### Step 5 — Grammar lesson stubs (14 lessons)
-Already included in `seed.sql`.
-
-### Step 6 — Grammar lesson content (Markdown + questions)
+### Grammar lesson content — A1 to B2 (14 lessons)
 ```
 supabase/seed_grammar_content.sql
 ```
-UPDATEs the 14 lesson stubs with full `content_md` and `questions`.
+UPDATEs the 14 lesson stubs with full Bulgarian Markdown explanations + 5 quiz questions each.
 
-### Step 7 — Listening clips (4 clips, A1–B2)
+Lessons covered:
+- **A1:** Present Simple (intro, positive, negative, questions)
+- **A2:** Present Continuous (intro, vs Simple)
+- **B1:** Past Simple (regular, irregular), Future will, Future going to
+- **B2:** Conditionals Zero/First, Second Conditional, Passive Voice, Reported Speech
+
+### Grammar lesson content — B2 to C1 (6 new lessons)
+```
+supabase/seed_grammar_b2_c1.sql
+```
+Inserts + populates 6 advanced lessons:
+
+| Lesson | Level |
+|--------|-------|
+| Present Perfect — Въведение | B2 |
+| Present Perfect vs Past Simple | B2 |
+| Modal Verbs | B2 |
+| Past Perfect | C1 |
+| Third Conditional | C1 |
+| Relative Clauses | C1 |
+
+### Listening clips (4 clips, A1–B2)
 ```
 supabase/seed_listening.sql
 ```
-Inserts listening clips with transcripts and comprehension questions. `audio_url` is a placeholder — replace with real hosted audio file URLs via Supabase Storage or any CDN.
+`audio_url` fields are placeholders — replace with real hosted URLs via Supabase Storage or a CDN.
 
-### Step 8 — Reading texts (4 texts, A2–C1)
+### Reading texts (4 texts, A2–C1)
 ```
 supabase/seed_reading.sql
 ```
-Inserts reading texts with Markdown body, vocabulary arrays, and comprehension questions.
+Reading texts with Markdown body, vocabulary arrays, and comprehension questions.
 
 ---
 
@@ -77,39 +125,62 @@ In **Supabase Dashboard → Authentication → Email**:
 - Enable **Email + Password** sign-in
 - Optionally disable email confirmation for local dev (Auth → Settings → disable "Confirm email")
 
-The `handle_new_user()` trigger automatically creates a `profiles` row when a new user signs up.
+The `handle_new_user()` trigger automatically creates a `profiles` row on sign-up.
 
 ---
 
-## 5. Storage (Optional — for audio files)
+## 5. Storage — Audio Files
 
-The admin panel has a built-in audio upload button that uploads directly to Supabase Storage. To enable it:
+The admin panel uploads directly to Supabase Storage. To enable it:
 
 **Step A — Create the bucket**
 
-In **Supabase Dashboard → Storage → New bucket**:
+Dashboard → Storage → New bucket:
 - Name: `audio`
-- Public bucket: **yes** (checked)
+- Public bucket: **yes**
 
 **Step B — Add RLS policies**
 
-In **Supabase Dashboard → SQL Editor**, run:
-
 ```sql
--- Public read (needed for the <audio> element to load the file)
 CREATE POLICY "Public audio read"
 ON storage.objects FOR SELECT TO public
 USING (bucket_id = 'audio');
 
--- Authenticated users can upload
 CREATE POLICY "Authenticated audio upload"
 ON storage.objects FOR INSERT TO authenticated
 WITH CHECK (bucket_id = 'audio');
 
--- Authenticated users can delete
 CREATE POLICY "Authenticated audio delete"
 ON storage.objects FOR DELETE TO authenticated
 USING (bucket_id = 'audio');
 ```
 
-After setup, go to **Admin → Слушане → [edit any clip]** and click "Качи .mp3" to upload an audio file. The public URL is filled in automatically.
+Then go to **Admin → Слушане → [edit clip]** and click "Качи .mp3".
+
+---
+
+## 6. Streak Reminder Emails (Phase 27)
+
+The daily cron job (`/api/cron/streak-reminder`) fires at 18:00 UTC via Vercel Cron (configured in `vercel.json`).
+
+Set these in **Vercel Dashboard → Environment Variables**:
+
+| Variable | Value |
+|---|---|
+| `RESEND_API_KEY` | From resend.com |
+| `RESEND_FROM_EMAIL` | Verified sender address |
+| `NEXT_PUBLIC_SITE_URL` | Your deployed URL |
+| `CRON_SECRET` | Random hex string (`openssl rand -hex 32`) |
+| `UNSUBSCRIBE_SECRET` | Random hex string (`openssl rand -hex 32`) |
+
+---
+
+## 7. Content Strategy
+
+The platform homepage advertises "2 000+ думи", "120 урока" etc. Use the bulk import to reach those numbers:
+
+- **Vocabulary:** Admin → Речник → **Масов импорт** — upload CSV files. Template available in the import UI.
+- **Grammar:** Use Admin → Граматика → Нов урок to add more lessons per level.
+- **Listening:** Add clips via Admin → Слушане. Upload MP3s to Supabase Storage.
+- **Reading:** Add texts via Admin → Четене. Use the `vocabulary` JSON field for in-text word hints.
+- **Writing:** Add exercises via Admin → Писане. Each exercise is a JSON array of `{prompt, answers, hint}`.
