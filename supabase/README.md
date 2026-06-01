@@ -66,6 +66,18 @@ supabase/migrations/007_writing.sql
 ```
 Creates `writing_exercises` and `user_writing_progress` tables. Also extends the `user_activity` module CHECK to include `'writing'`.
 
+### Step 8 — Daily goals
+```
+supabase/migrations/008_daily_goal.sql
+```
+Adds `daily_goal TEXT DEFAULT 'standard'` column to `profiles` (values: `light`, `standard`, `intensive`).
+
+### Step 9 — Extended achievements
+```
+supabase/migrations/009_achievements_extended.sql
+```
+Inserts 9 new achievements (writing milestones, placement test, level milestones, 7-day goal streak, top-10 leaderboard), expanding from 16 → 25 total.
+
 ---
 
 ## 3. Seed Content (SQL Editor)

@@ -7,7 +7,7 @@ import StreakProtectionBanner from '@/components/StreakProtectionBanner';
 import AchievementShelf from '@/components/achievements/AchievementShelf';
 import DailyGoalCard from '@/components/goals/DailyGoalCard';
 import { checkAndUnlockAchievements } from '@/lib/actions/achievements';
-import { computeTodayProgress, type DailyGoal } from '@/lib/actions/goals';
+import { computeTodayProgress, checkAndLogDailyGoal, type DailyGoal } from '@/lib/actions/goals';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
@@ -129,6 +129,9 @@ export default async function NapredakPage() {
     return best;
   }
   const bestStreak = longestStreak(activeDates);
+
+  // Log daily goal completion if met (must run before achievement check)
+  await checkAndLogDailyGoal(user.id);
 
   // Check & unlock any newly earned achievements (silent — no toast on this page)
   await checkAndUnlockAchievements(user.id);
