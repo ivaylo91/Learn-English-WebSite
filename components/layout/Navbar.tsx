@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
-import { Menu, X, LogOut, TrendingUp } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Menu, X, LogOut, TrendingUp, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import SearchModal from "@/components/search/SearchModal";
 
 const navLinks = [
   { href: "/rechnik",   label: "Речник"    },
@@ -37,8 +38,21 @@ function UserAvatar({ name }: { name: string }) {
 export default function Navbar() {
   const pathname = usePathname();
   const router   = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open,       setOpen]       = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const user = useAuthStore((s) => s.user);
+
+  // Global Cmd+K / Ctrl+K shortcut
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   const displayName: string =
     user?.user_metadata?.name ??
@@ -119,6 +133,15 @@ export default function Navbar() {
         {/* Desktop CTA — logged out */}
         {!user && (
           <div className="hidden md:flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="p-2 rounded-xl transition-colors cursor-pointer hover:bg-[var(--bg-2)]"
+              style={{ color: 'var(--muted)' }}
+              title="Търси (Ctrl+K)"
+              aria-label="Търси"
+            >
+              <Search className="w-4 h-4" />
+            </button>
             <ThemeToggle />
             <Link
               href="/login"
@@ -140,6 +163,15 @@ export default function Navbar() {
         {/* Desktop — logged in */}
         {user && (
           <div className="hidden md:flex items-center gap-3 shrink-0">
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="p-2 rounded-xl transition-colors cursor-pointer hover:bg-[var(--bg-2)]"
+              style={{ color: 'var(--muted)' }}
+              title="Търси (Ctrl+K)"
+              aria-label="Търси"
+            >
+              <Search className="w-4 h-4" />
+            </button>
             <ThemeToggle />
             <Link
               href="/napredak"
@@ -171,15 +203,25 @@ export default function Navbar() {
           </div>
         )}
 
-        {/* Mobile toggle */}
-        <button
-          className="md:hidden p-2 rounded-lg cursor-pointer"
-          style={{ color: "var(--muted)" }}
-          onClick={() => setOpen(!open)}
-          aria-label="Меню"
-        >
-          {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+        {/* Mobile search + toggle */}
+        <div className="md:hidden flex items-center gap-1">
+          <button
+            className="p-2 rounded-lg cursor-pointer"
+            style={{ color: "var(--muted)" }}
+            onClick={() => setSearchOpen(true)}
+            aria-label="Търси"
+          >
+            <Search className="w-5 h-5" />
+          </button>
+          <button
+            className="p-2 rounded-lg cursor-pointer"
+            style={{ color: "var(--muted)" }}
+            onClick={() => setOpen(!open)}
+            aria-label="Меню"
+          >
+            {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}
@@ -254,6 +296,7 @@ export default function Navbar() {
           </div>
         </div>
       )}
+      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
     </header>
   );
 }
