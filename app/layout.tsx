@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Manrope, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import ServiceWorkerProvider from "@/components/providers/ServiceWorkerProvider";
 
 const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -29,12 +30,27 @@ const jetbrainsMono = JetBrains_Mono({
 
 const BASE_URL = 'https://uchi-angliyski.vercel.app';
 
+export const viewport: Viewport = {
+  themeColor:        '#e8633a',
+  width:             'device-width',
+  initialScale:      1,
+  minimumScale:      1,
+  viewportFit:       'cover',
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
+  manifest:     '/manifest.webmanifest',
   title: {
     default:  'Учи Английски',
     template: '%s | Учи Английски',
   },
+  appleWebApp: {
+    capable:         true,
+    statusBarStyle:  'default',
+    title:           'Учи Английски',
+  },
+  formatDetection: { telephone: false },
   description:
     'Безплатна платформа за изучаване на английски с речник, граматика, слушане и четене — всичко на български.',
   keywords: [
@@ -90,6 +106,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       >
         <ThemeProvider>
           <AuthProvider>
+            <ServiceWorkerProvider />
             <Navbar />
             <main className="flex-1">{children}</main>
             <Footer />
