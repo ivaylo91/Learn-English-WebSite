@@ -54,15 +54,16 @@ export default async function ProfilPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('name, level, xp, streak, created_at')
+    .select('name, level, xp, streak, created_at, email_reminders')
     .eq('id', user.id)
     .single();
 
-  const name      = profile?.name      ?? user.email?.split('@')[0] ?? 'Потребител';
-  const level     = (profile?.level    ?? 'A1') as Level;
-  const xp        = profile?.xp        ?? 0;
-  const streak    = profile?.streak    ?? 0;
-  const joinedAt  = profile?.created_at ?? user.created_at;
+  const name           = profile?.name           ?? user.email?.split('@')[0] ?? 'Потребител';
+  const level          = (profile?.level         ?? 'A1') as Level;
+  const xp             = profile?.xp             ?? 0;
+  const streak         = profile?.streak         ?? 0;
+  const joinedAt       = profile?.created_at     ?? user.created_at;
+  const emailReminders = profile?.email_reminders ?? true;
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
@@ -126,7 +127,7 @@ export default async function ProfilPage() {
         style={{ background: "var(--surface)", border: "1px solid var(--line)", boxShadow: "var(--shadow-sm)" }}
       >
         <h3 className="text-base font-bold mb-5" style={{ color: "var(--ink)" }}>Редактирай профила</h3>
-        <ProfileForm userId={user.id} initName={name} initLevel={level} />
+        <ProfileForm userId={user.id} initName={name} initLevel={level} initEmailReminders={emailReminders} />
       </div>
 
       {/* Security */}

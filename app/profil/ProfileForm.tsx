@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Save, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Save, CheckCircle2, AlertCircle, Bell, BellOff } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { Level } from '@/lib/types/database';
 
@@ -18,17 +18,19 @@ const levelTheme: Record<Level, React.CSSProperties> = {
 };
 
 interface Props {
-  userId:    string;
-  initName:  string;
-  initLevel: Level;
+  userId:             string;
+  initName:           string;
+  initLevel:          Level;
+  initEmailReminders: boolean;
 }
 
-export default function ProfileForm({ userId, initName, initLevel }: Props) {
+export default function ProfileForm({ userId, initName, initLevel, initEmailReminders }: Props) {
   const router  = useRouter();
-  const [name,    setName]    = useState(initName);
-  const [level,   setLevel]   = useState<Level>(initLevel);
-  const [loading, setLoading] = useState(false);
-  const [status,  setStatus]  = useState<'idle' | 'success' | 'error'>('idle');
+  const [name,           setName]           = useState(initName);
+  const [level,          setLevel]          = useState<Level>(initLevel);
+  const [emailReminders, setEmailReminders] = useState(initEmailReminders);
+  const [loading,        setLoading]        = useState(false);
+  const [status,         setStatus]         = useState<'idle' | 'success' | 'error'>('idle');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -41,7 +43,7 @@ export default function ProfileForm({ userId, initName, initLevel }: Props) {
 
     const { error: dbErr } = await supabase
       .from('profiles')
-      .update({ name: trimmed, level })
+      .update({ name: trimmed, level, email_reminders: emailReminders })
       .eq('id', userId);
 
     if (dbErr) {
@@ -100,6 +102,42 @@ export default function ProfileForm({ userId, initName, initLevel }: Props) {
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Email reminders toggle */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <div
+            className="mt-0.5 w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            style={{ background: emailReminders ? 'var(--peach)' : 'var(--bg-2)' }}
+          >
+            {emailReminders
+              ? <Bell className="w-4 h-4" style={{ color: 'var(--coral-ink)' }} />
+              : <BellOff className="w-4 h-4" style={{ color: 'var(--muted)' }} />
+            }
+          </div>
+          <div>
+            <p className="text-sm font-semibold" style={{ color: 'var(--ink-2)' }}>
+              Напомняния за серия
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
+              Имейл, когато серията ти е в риск
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={emailReminders}
+          onClick={() => setEmailReminders(v => !v)}
+          className="relative shrink-0 w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 cursor-pointer"
+          style={{ background: emailReminders ? 'var(--coral)' : 'var(--line)' }}
+        >
+          <span
+            className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform duration-200"
+            style={{ transform: emailReminders ? 'translateX(20px)' : 'translateX(0)' }}
+          />
+        </button>
       </div>
 
       {/* Feedback */}
