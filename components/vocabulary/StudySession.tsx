@@ -1,18 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { UserWordProgress } from '@/lib/types/database';
-import { reviewWord } from '@/lib/db/vocabulary';
+import { reviewWord, getNextDueDate } from '@/lib/db/vocabulary';
 import { recordActivity } from '@/lib/db/activity';
 import { checkAndUnlockAchievements, type UnlockedAchievement } from '@/lib/actions/achievements';
 import FlashCard from './FlashCard';
 import AchievementToast from '@/components/achievements/AchievementToast';
-import { Trophy, BookMarked, ArrowRight } from 'lucide-react';
+import { Trophy, BookMarked, ArrowRight, Clock } from 'lucide-react';
 import Link from 'next/link';
 
 interface StudySessionProps {
   userId: string;
   dueWords: UserWordProgress[];
+}
+
+function formatNextDue(iso: string): string {
+  const diff = new Date(iso).getTime() - Date.now();
+  const mins = Math.round(diff / 60_000);
+  if (mins < 60)  return `след ${mins} мин.`;
+  const hrs = Math.round(diff / 3_600_000);
+  if (hrs < 24)   return `след ${hrs} ч.`;
+  const days = Math.round(diff / 86_400_000);
+  if (days === 1) return 'утре';
+  return `след ${days} дни`;
 }
 
 export default function StudySession({ userId, dueWords }: StudySessionProps) {
@@ -21,6 +32,13 @@ export default function StudySession({ userId, dueWords }: StudySessionProps) {
   const [submitting, setSubmitting]  = useState(false);
   const [finished, setFinished]     = useState(false);
   const [newAchievements, setNewAchievements] = useState<UnlockedAchievement[]>([]);
+  const [nextDueAt, setNextDueAt]   = useState<string | null>(null);
+
+  // Fetch next upcoming review date when queue is empty
+  useEffect(() => {
+    if (dueWords.length > 0) return;
+    getNextDueDate(userId).then(setNextDueAt);
+  }, [userId, dueWords.length]);
 
   const current = dueWords[index];
 
@@ -49,6 +67,7 @@ export default function StudySession({ userId, dueWords }: StudySessionProps) {
   };
 
   if (dueWords.length === 0) {
+    const nextLabel = nextDueAt ? formatNextDue(nextDueAt) : null;
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <div
@@ -58,9 +77,19 @@ export default function StudySession({ userId, dueWords }: StudySessionProps) {
           <Trophy className="w-8 h-8" style={{ color: 'var(--sage-ink)' }} />
         </div>
         <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--ink)' }}>Всичко прегледано!</h2>
-        <p className="max-w-sm mb-8 text-sm leading-relaxed" style={{ color: 'var(--muted)' }}>
-          Няма думи за повторение днес. Добави нови думи от речника или се върни утре.
+        <p className="max-w-sm mb-4 text-sm leading-relaxed" style={{ color: 'var(--muted)' }}>
+          Няма думи за повторение в момента. Добави нови от речника или изчакай следващата сесия.
         </p>
+        {nextLabel && (
+          <div
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm mb-8"
+            style={{ background: 'var(--butter)', border: '1px solid #e8d8a8', color: 'var(--butter-ink)' }}
+          >
+            <Clock className="w-4 h-4 shrink-0" />
+            Следваща дума: <strong>{nextLabel}</strong>
+          </div>
+        )}
+        {!nextLabel && <div className="mb-8" />}
         <Link
           href="/rechnik"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-white active:scale-[.98] transition-all"
@@ -137,6 +166,11 @@ export default function StudySession({ userId, dueWords }: StudySessionProps) {
       cardNumber={index + 1}
       total={dueWords.length}
       loading={submitting}
+      srsState={{
+        ease_factor:   current.ease_factor,
+        interval_days: current.interval_days,
+        repetitions:   current.repetitions,
+      }}
       onRate={handleRate}
     />
     </>

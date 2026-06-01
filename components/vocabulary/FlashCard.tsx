@@ -5,12 +5,19 @@ import type { VocabularyWord } from '@/lib/types/database';
 import Badge from '@/components/ui/Badge';
 import { RotateCcw } from 'lucide-react';
 
+export interface SrsState {
+  ease_factor:   number;
+  interval_days: number;
+  repetitions:   number;
+}
+
 interface FlashCardProps {
-  word: VocabularyWord;
+  word:      VocabularyWord;
   cardNumber: number;
-  total: number;
-  loading?: boolean;
-  onRate: (quality: 0 | 3 | 5) => void;
+  total:     number;
+  loading?:  boolean;
+  srsState?: SrsState;
+  onRate:    (quality: 0 | 3 | 5) => void;
 }
 
 const levelBadge: Record<string, 'sage' | 'sky' | 'lavender'> = {
@@ -19,13 +26,35 @@ const levelBadge: Record<string, 'sage' | 'sky' | 'lavender'> = {
   C1: 'lavender', C2: 'lavender',
 };
 
-const RATINGS = [
-  { quality: 0 as const, label: 'Трудно', sub: 'повтори утре',  key: '1', bg: 'var(--rose)',   color: 'var(--rose-ink)',   border: '#e8c4c4' },
-  { quality: 3 as const, label: 'Добре',  sub: 'след 6 дни',    key: '2', bg: 'var(--butter)', color: 'var(--butter-ink)', border: '#e8d8a8' },
-  { quality: 5 as const, label: 'Лесно',  sub: 'след 12 дни',   key: '3', bg: 'var(--sage)',   color: 'var(--sage-ink)',   border: '#b5d8be' },
-] as const;
+// Mirror the SM-2 formula from lib/db/vocabulary.ts to predict next interval
+function predictDays(quality: 0 | 3 | 5, s: SrsState): number {
+  if (quality < 3) return 1;
+  const { ease_factor: ef, interval_days: iv, repetitions: reps } = s;
+  if (reps === 0) return 1;
+  if (reps === 1) return 6;
+  // Apply the quality-dependent ef change before computing next interval
+  const newEf = Math.max(1.3, ef + 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+  return Math.max(1, Math.round(iv * newEf));
+}
 
-export default function FlashCard({ word, cardNumber, total, loading, onRate }: FlashCardProps) {
+function daysLabel(days: number): string {
+  if (days === 1) return 'утре';
+  if (days < 7)   return `след ${days} дни`;
+  if (days < 30)  return `след ${Math.round(days / 7)} сед.`;
+  return `след ${Math.round(days / 30)} мес.`;
+}
+
+const RATING_BASES = [
+  { quality: 0 as const, label: 'Трудно', fallback: 'повтори утре',  key: '1', bg: 'var(--rose)',   color: 'var(--rose-ink)',   border: '#e8c4c4' },
+  { quality: 3 as const, label: 'Добре',  fallback: 'след 3 дни',    key: '2', bg: 'var(--butter)', color: 'var(--butter-ink)', border: '#e8d8a8' },
+  { quality: 5 as const, label: 'Лесно',  fallback: 'след 7 дни',    key: '3', bg: 'var(--sage)',   color: 'var(--sage-ink)',   border: '#b5d8be' },
+];
+
+export default function FlashCard({ word, cardNumber, total, loading, srsState, onRate }: FlashCardProps) {
+  const ratings = RATING_BASES.map(r => ({
+    ...r,
+    sub: srsState ? daysLabel(predictDays(r.quality, srsState)) : r.fallback,
+  }));
   const [flipped, setFlipped] = useState(false);
 
   // Reset to front face whenever the word changes
@@ -170,7 +199,7 @@ export default function FlashCard({ word, cardNumber, total, loading, onRate }: 
         className="mt-8 grid grid-cols-3 gap-3 transition-all duration-300"
         style={{ opacity: flipped ? 1 : 0, pointerEvents: flipped ? 'auto' : 'none' }}
       >
-        {RATINGS.map(({ quality, label, sub, key, bg, color, border }) => (
+        {ratings.map(({ quality, label, sub, key, bg, color, border }) => (
           <button
             key={quality}
             disabled={loading}

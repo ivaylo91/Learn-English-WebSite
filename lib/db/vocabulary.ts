@@ -99,6 +99,21 @@ export async function reviewWord(
     .eq("word_id", wordId);
 }
 
+/** ISO timestamp of the next word due for review (ignores 'known' words) */
+export async function getNextDueDate(userId: string): Promise<string | null> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from('user_word_progress')
+    .select('next_review_at')
+    .eq('user_id', userId)
+    .neq('status', 'known')
+    .gt('next_review_at', new Date().toISOString())
+    .order('next_review_at')
+    .limit(1)
+    .maybeSingle();
+  return data?.next_review_at ?? null;
+}
+
 /** Distinct categories from vocabulary table */
 export async function getCategories(): Promise<string[]> {
   const supabase = createClient();
