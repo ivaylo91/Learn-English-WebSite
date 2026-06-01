@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  BookMarked, PenLine, Headphones, BookOpen,
+  BookMarked, PenLine, Headphones, BookOpen, Pencil,
   LayoutDashboard, Menu, X, ArrowLeft,
 } from 'lucide-react';
 
@@ -14,6 +14,7 @@ const navItems = [
   { href: '/admin/gramatika', label: 'Граматика', icon: PenLine },
   { href: '/admin/slusham',   label: 'Слушане',   icon: Headphones },
   { href: '/admin/chetene',   label: 'Четене',    icon: BookOpen },
+  { href: '/admin/pisane',    label: 'Писане',    icon: Pencil },
 ];
 
 export default function AdminSidebar() {

@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { TrendingUp, Flame, Trophy, Target, BookMarked, PenLine, Headphones, BookOpen } from 'lucide-react';
+import { TrendingUp, Flame, Trophy, Target, BookMarked, PenLine, Headphones, BookOpen, Pencil } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import Badge from '@/components/ui/Badge';
 import StreakCalendar from '@/components/napredak/StreakCalendar';
@@ -31,6 +31,7 @@ const moduleIcon = {
   grammar:    PenLine,
   listening:  Headphones,
   reading:    BookOpen,
+  writing:    Pencil,
 } as const;
 
 const moduleLabel = {
@@ -38,6 +39,7 @@ const moduleLabel = {
   grammar:    'Граматика',
   listening:  'Слушане',
   reading:    'Четене',
+  writing:    'Писане',
 } as const;
 
 const moduleTheme = {
@@ -45,12 +47,14 @@ const moduleTheme = {
   grammar:    { bg: 'var(--lavender)',   color: 'var(--lav-ink)',   bar: 'var(--lav-ink)' },
   listening:  { bg: 'var(--sky)',        color: 'var(--sky-ink)',   bar: 'var(--sky-ink)' },
   reading:    { bg: 'var(--sage)',       color: 'var(--sage-ink)',  bar: 'var(--sage-ink)' },
+  writing:    { bg: 'var(--butter)',     color: 'var(--butter-ink)', bar: 'var(--butter-ink)' },
 } as const;
 
 const actionLabel: Record<string, string> = {
-  study_session:   'учебна сесия',
-  lesson_complete: 'урок завършен',
-  quiz_complete:   'тест завършен',
+  study_session:    'учебна сесия',
+  lesson_complete:  'урок завършен',
+  quiz_complete:    'тест завършен',
+  exercise_complete: 'упражнение завършено',
 };
 
 export default async function NapredakPage() {
@@ -69,6 +73,8 @@ export default async function NapredakPage() {
     listeningProgressRes,
     readingTotalRes,
     readingProgressRes,
+    writingTotalRes,
+    writingProgressRes,
     activityRes,
     activityDatesRes,
   ] = await Promise.all([
@@ -81,6 +87,8 @@ export default async function NapredakPage() {
     supabase.from('user_content_progress').select('completed').eq('user_id', user.id).eq('content_type', 'listening'),
     supabase.from('reading_texts').select('id', { count: 'exact', head: true }),
     supabase.from('user_content_progress').select('completed').eq('user_id', user.id).eq('content_type', 'reading'),
+    supabase.from('writing_exercises').select('id', { count: 'exact', head: true }),
+    supabase.from('user_writing_progress').select('completed').eq('user_id', user.id),
     supabase
       .from('user_activity')
       .select('module, action, xp_gained, created_at')
@@ -129,8 +137,10 @@ export default async function NapredakPage() {
   const listeningDone  = (listeningProgressRes.data ?? []).filter(r => r.completed).length;
   const readingTotal   = readingTotalRes.count ?? 0;
   const readingDone    = (readingProgressRes.data ?? []).filter(r => r.completed).length;
+  const writingTotal   = writingTotalRes.count ?? 0;
+  const writingDone    = (writingProgressRes.data ?? []).filter(r => r.completed).length;
   const activity       = activityRes.data ?? [];
-  const totalDone      = grammarDone + listeningDone + readingDone;
+  const totalDone      = grammarDone + listeningDone + readingDone + writingDone;
 
   const kpis = [
     { label: 'Дни поред',  value: String(profile?.streak ?? 0), icon: Flame,      bg: 'var(--peach)',       color: 'var(--coral-ink)' },
@@ -159,6 +169,11 @@ export default async function NapredakPage() {
       label: 'Четене',    icon: BookOpen,   module: 'reading' as const,
       done: readingDone,  total: Math.max(readingTotal, 1),
       subtitle: `${readingDone} от ${readingTotal} текста`,
+    },
+    {
+      label: 'Писане',    icon: Pencil,     module: 'writing' as const,
+      done: writingDone,  total: Math.max(writingTotal, 1),
+      subtitle: `${writingDone} от ${writingTotal} упражнения`,
     },
   ];
 

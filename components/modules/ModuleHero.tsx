@@ -67,6 +67,16 @@ const sectionThemes: Record<string, { heroBg: string; heroBorder: string; iconBg
     textColor: "var(--ink)",
     mutedColor: "var(--butter-ink)",
   },
+  /* Писане */
+  "from-yellow-400 to-amber-500": {
+    heroBg: "linear-gradient(135deg, var(--butter) 0%, #f8e8b0 100%)",
+    heroBorder: "var(--line)",
+    iconBg: "var(--hero-icon-bg)",
+    iconColor: "var(--butter-ink)",
+    statBg: "var(--hero-stat-bg)",
+    textColor: "var(--ink)",
+    mutedColor: "var(--butter-ink)",
+  },
 };
 
 const DEFAULT_THEME = sectionThemes["from-indigo-600 to-violet-600"];

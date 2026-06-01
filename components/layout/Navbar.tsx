@@ -15,6 +15,7 @@ const navLinks = [
   { href: "/gramatika", label: "Граматика" },
   { href: "/slusham",   label: "Слушане"   },
   { href: "/chetene",   label: "Четене"    },
+  { href: "/pisane",    label: "Писане"    },
   { href: "/napredak",  label: "Напредък"  },
 ];
 

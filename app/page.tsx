@@ -1,6 +1,6 @@
 import Link from "next/link";
 import {
-  BookOpen, Headphones, BookMarked, PenLine,
+  BookOpen, Headphones, BookMarked, PenLine, Pencil,
   ArrowRight, CheckCircle2, TrendingUp,
 } from "lucide-react";
 import Badge from "@/components/ui/Badge";
@@ -203,6 +203,13 @@ const modules: ModuleCardProps[] = [
     count: "150+ текста",
     iconBg: "var(--sage)", iconColor: "var(--sage-ink)",
   },
+  {
+    href: "/pisane", icon: Pencil,
+    title: "Писане", badge: "Упражнения", badgeColor: "butter",
+    description: "Попълни пропуска, преведи изречение или завърши текст — с моментална проверка.",
+    count: "50+ задачи",
+    iconBg: "var(--butter)", iconColor: "var(--butter-ink)",
+  },
 ];
 
 const features = [
@@ -400,9 +407,14 @@ export default async function HomePage() {
         </div>
 
         {/* Row 2: 2fr + 3fr */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
           <div className="md:col-span-2"><ModuleCard {...modules[2]} delay="160ms" /></div>
           <div className="md:col-span-3"><ModuleCard {...modules[3]} delay="240ms" large /></div>
+        </div>
+
+        {/* Row 3: full-width writing */}
+        <div className="grid grid-cols-1">
+          <ModuleCard {...modules[4]} delay="320ms" />
         </div>
       </section>
 

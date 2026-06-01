@@ -1,5 +1,5 @@
 export type Level = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
-export type Module = 'vocabulary' | 'grammar' | 'listening' | 'reading';
+export type Module = 'vocabulary' | 'grammar' | 'listening' | 'reading' | 'writing';
 export type WordStatus = 'new' | 'learning' | 'known';
 
 // ── Content types ─────────────────────────────────────────────
@@ -109,6 +109,32 @@ export interface UserLessonProgress {
   grammar_lessons?: GrammarLesson;
 }
 
+export interface WritingPrompt {
+  prompt:  string;
+  answers: string[];
+  hint?:   string | null;
+}
+
+export interface WritingExercise {
+  id:         string;
+  slug:       string;
+  title:      string;
+  level:      Level;
+  topic:      string;
+  prompts:    WritingPrompt[];
+  created_at: string;
+}
+
+export interface UserWritingProgress {
+  id:           string;
+  user_id:      string;
+  exercise_id:  string;
+  score:        number;
+  completed:    boolean;
+  completed_at: string | null;
+  created_at:   string;
+}
+
 export interface UserActivity {
   id: string;
   user_id: string;
@@ -178,6 +204,16 @@ export type Database = {
         Row: UserActivity;
         Insert: Omit<UserActivity, 'id' | 'created_at'>;
         Update: never;
+      };
+      writing_exercises: {
+        Row: WritingExercise;
+        Insert: Omit<WritingExercise, 'id' | 'created_at'>;
+        Update: Partial<Omit<WritingExercise, 'id' | 'created_at'>>;
+      };
+      user_writing_progress: {
+        Row: UserWritingProgress;
+        Insert: Omit<UserWritingProgress, 'id' | 'created_at'>;
+        Update: Partial<Omit<UserWritingProgress, 'id' | 'created_at'>>;
       };
     };
     Functions: {

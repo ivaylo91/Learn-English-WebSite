@@ -164,3 +164,38 @@ export async function deleteText(id: string) {
   revalidatePath('/admin/chetene');
   revalidatePath('/chetene');
 }
+
+// ── Writing ────────────────────────────────────────────────────
+
+export async function upsertExercise(formData: FormData) {
+  const db = await requireAdmin();
+  const id = formData.get('id') as string | null;
+
+  let prompts = [];
+  try { prompts = JSON.parse((formData.get('prompts') as string) || '[]'); } catch { prompts = []; }
+
+  const payload = {
+    slug:    (formData.get('slug')  as string).trim(),
+    title:   (formData.get('title') as string).trim(),
+    level:   (formData.get('level') as Level),
+    topic:   (formData.get('topic') as string).trim(),
+    prompts,
+  };
+
+  if (id) {
+    await db.from('writing_exercises').update(payload).eq('id', id);
+  } else {
+    await db.from('writing_exercises').insert(payload);
+  }
+
+  revalidatePath('/admin/pisane');
+  revalidatePath('/pisane');
+  redirect('/admin/pisane?saved=1');
+}
+
+export async function deleteExercise(id: string) {
+  const db = await requireAdmin();
+  await db.from('writing_exercises').delete().eq('id', id);
+  revalidatePath('/admin/pisane');
+  revalidatePath('/pisane');
+}
