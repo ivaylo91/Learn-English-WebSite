@@ -2,11 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { BookMarked, PenLine, Headphones, X, ArrowRight } from 'lucide-react';
+import { BookMarked, PenLine, Headphones, Target, X, ArrowRight } from 'lucide-react';
 
 const DISMISS_KEY = 'onboarding_dismissed_v1';
 
 const STEPS = [
+  {
+    href: '/test-za-nivo',
+    icon: Target,
+    label: 'Тест за ниво',
+    sub: 'Открий своето ниво',
+    bg: 'var(--peach)',
+    color: 'var(--coral-ink)',
+  },
   {
     href: '/rechnik',
     icon: BookMarked,

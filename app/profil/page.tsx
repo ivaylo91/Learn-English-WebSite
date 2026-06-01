@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import ProfileForm from './ProfileForm';
-import { Flame, Trophy, TrendingUp, ChevronLeft, KeyRound } from 'lucide-react';
+import { Flame, Trophy, TrendingUp, ChevronLeft, KeyRound, Target } from 'lucide-react';
 import Badge from '@/components/ui/Badge';
 import type { Metadata } from 'next';
 import type { Level } from '@/lib/types/database';
@@ -131,7 +131,7 @@ export default async function ProfilPage() {
 
       {/* Security */}
       <div
-        className="rounded-2xl p-6"
+        className="rounded-2xl p-6 mb-6"
         style={{ background: "var(--surface)", border: "1px solid var(--line)", boxShadow: "var(--shadow-sm)" }}
       >
         <h3 className="text-base font-bold mb-4" style={{ color: "var(--ink)" }}>Сигурност</h3>
@@ -142,6 +142,25 @@ export default async function ProfilPage() {
         >
           <KeyRound className="w-4 h-4" />
           Промяна на паролата
+        </Link>
+      </div>
+
+      {/* Placement test */}
+      <div
+        className="rounded-2xl p-6"
+        style={{ background: "var(--surface)", border: "1px solid var(--line)", boxShadow: "var(--shadow-sm)" }}
+      >
+        <h3 className="text-base font-bold mb-1" style={{ color: "var(--ink)" }}>Ниво</h3>
+        <p className="text-sm mb-4" style={{ color: "var(--muted)" }}>
+          Не си сигурен на кое ниво си? Реши кратък тест и нивото ти ще се обнови автоматично.
+        </p>
+        <Link
+          href="/test-za-nivo"
+          className="inline-flex items-center gap-2 text-sm font-semibold hover:underline"
+          style={{ color: "var(--coral)" }}
+        >
+          <Target className="w-4 h-4" />
+          Тест за ниво
         </Link>
       </div>
 
