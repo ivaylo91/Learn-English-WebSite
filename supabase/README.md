@@ -134,17 +134,29 @@ Inserts + populates 6 advanced lessons:
 | Third Conditional | C1 |
 | Relative Clauses | C1 |
 
-### Listening clips (4 clips, A1–B2)
+### Listening clips — starter set (4 clips, A1–B2)
 ```
 supabase/seed_listening.sql
 ```
-`audio_url` fields are placeholders — replace with real hosted URLs via Supabase Storage or a CDN.
+`audio_url` fields are placeholders — replace with real hosted URLs via Supabase Storage.
 
-### Reading texts (4 texts, A2–C1)
+### Listening clips — extended set (8 clips, A1–B2)
+```
+supabase/seed_listening_extended.sql
+```
+Run after `seed_listening.sql`. 8 more clips: At the Doctor's, Shopping for Clothes (A1); Making Plans by Phone, My Neighbourhood (A2); Planning a Trip to Portugal, A Job Interview (B1); The Future of Cities, Mindfulness and Mental Health (B2). All have full transcripts and 5 comprehension questions.
+
+### Reading texts — starter set (4 texts, A2–C1)
 ```
 supabase/seed_reading.sql
 ```
 Reading texts with Markdown body, vocabulary arrays, and comprehension questions.
+
+### Reading texts — extended set (8 texts, A1–C1)
+```
+supabase/seed_reading_extended.sql
+```
+Run after `seed_reading.sql`. 8 more texts: My Family (A1); Food Around the World, A Typical School Day (A2); Social Media and Young People, The History of the Internet (B1); The Psychology of Happiness, Sustainable Fashion (B2); The Ethics of Artificial Intelligence (C1).
 
 ---
 
