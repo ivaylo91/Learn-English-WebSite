@@ -6,6 +6,7 @@ import StreakCalendar from '@/components/napredak/StreakCalendar';
 import StreakProtectionBanner from '@/components/StreakProtectionBanner';
 import AchievementShelf from '@/components/achievements/AchievementShelf';
 import DailyGoalCard from '@/components/goals/DailyGoalCard';
+import ShareCard from '@/components/napredak/ShareCard';
 import { checkAndUnlockAchievements } from '@/lib/actions/achievements';
 import { computeTodayProgress, checkAndLogDailyGoal, type DailyGoal } from '@/lib/actions/goals';
 import Link from 'next/link';
@@ -81,7 +82,7 @@ export default async function NapredakPage() {
     activityDatesRes,
     todayActivityRes,
   ] = await Promise.all([
-    supabase.from('profiles').select('xp, streak, level, last_active_at, daily_goal').eq('id', user.id).single(),
+    supabase.from('profiles').select('name, xp, streak, level, last_active_at, daily_goal').eq('id', user.id).single(),
     supabase.from('vocabulary_words').select('id', { count: 'exact', head: true }),
     supabase.from('user_word_progress').select('status').eq('user_id', user.id),
     supabase.from('grammar_lessons').select('id', { count: 'exact', head: true }),
@@ -136,7 +137,7 @@ export default async function NapredakPage() {
   // Check & unlock any newly earned achievements (silent — no toast on this page)
   await checkAndUnlockAchievements(user.id);
 
-  const profile        = profileRes.data as { xp: number; streak: number; level: string; last_active_at: string | null; daily_goal?: string } | null;
+  const profile        = profileRes.data as { name?: string; xp: number; streak: number; level: string; last_active_at: string | null; daily_goal?: string } | null;
   const todayUTC       = new Date().toISOString().slice(0, 10);
   const streakAtRisk   = (profile?.streak ?? 0) > 0 && (profile?.last_active_at?.slice(0, 10) ?? '') < todayUTC;
   const vocabTotal     = vocabTotalRes.count ?? 0;
@@ -236,6 +237,14 @@ export default async function NapredakPage() {
           </div>
         ))}
       </div>
+
+      {/* Share card */}
+      <ShareCard
+        streak={profile?.streak ?? 0}
+        level={profile?.level  ?? 'A1'}
+        xp={profile?.xp        ?? 0}
+        name={profile?.name?.trim() || 'Потребител'}
+      />
 
       {/* Daily goal */}
       <section className="mb-10">
