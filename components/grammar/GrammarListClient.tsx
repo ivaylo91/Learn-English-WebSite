@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import type { GrammarLesson, Level } from '@/lib/types/database';
 import Badge from '@/components/ui/Badge';
-import { Search, SlidersHorizontal, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Search, SlidersHorizontal, ChevronRight, CheckCircle2, ArrowRight } from 'lucide-react';
 
 interface ProgressEntry {
   lesson_id: string;
@@ -31,23 +31,32 @@ function LessonRow({
   done,
   score,
   showCategory,
+  isNext,
 }: {
   lesson: GrammarLesson;
   index: number;
   done: boolean;
   score?: number | null;
   showCategory?: boolean;
+  isNext?: boolean;
 }) {
   return (
     <Link
       href={`/gramatika/${lesson.slug}`}
-      className="group flex items-center gap-4 rounded-2xl px-5 py-4 transition-all duration-200 hover:-translate-y-0.5"
+      className="group flex items-center gap-4 rounded-2xl px-5 py-4 transition-all duration-200 hover:-translate-y-0.5 relative overflow-hidden"
       style={{
-        background: 'var(--surface)',
-        border: '1px solid var(--line)',
+        background: isNext ? 'var(--coral-soft)' : 'var(--surface)',
+        border: isNext ? '1px solid #f4c8a8' : '1px solid var(--line)',
         boxShadow: 'var(--shadow-sm)',
       }}
     >
+      {/* Left accent bar for "next" lesson */}
+      {isNext && (
+        <div
+          className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl"
+          style={{ background: 'var(--coral)' }}
+        />
+      )}
       <div
         className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold"
         style={
@@ -64,6 +73,15 @@ function LessonRow({
           <p className="font-semibold text-sm leading-tight" style={{ color: 'var(--ink)' }}>
             {lesson.title}
           </p>
+          {isNext && (
+            <span
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
+              style={{ background: 'var(--coral)', color: '#fff' }}
+            >
+              <ArrowRight className="w-2.5 h-2.5" />
+              Следващ
+            </span>
+          )}
           {showCategory && (
             <Badge color={levelBadge[lesson.level] ?? 'sage'}>{lesson.level}</Badge>
           )}
@@ -204,8 +222,16 @@ export default function GrammarListClient({ lessons, progress }: GrammarListClie
         /* Grouped by category when no filter */
         <div className="flex flex-col gap-10">
           {Object.entries(grouped!).map(([category, categoryLessons]) => {
-            const done = categoryLessons.filter(l => progMap.get(l.id)?.completed).length;
-            const pct  = categoryLessons.length > 0 ? (done / categoryLessons.length) * 100 : 0;
+            const doneLessons = categoryLessons.filter(l => progMap.get(l.id)?.completed);
+            const doneCount   = doneLessons.length;
+            const allDone     = doneCount === categoryLessons.length && categoryLessons.length > 0;
+            const anyStarted  = doneCount > 0 || categoryLessons.some(l => progMap.has(l.id));
+            const pct         = categoryLessons.length > 0 ? (doneCount / categoryLessons.length) * 100 : 0;
+
+            // Index of the first incomplete lesson (to mark as "next")
+            const nextIdx = anyStarted
+              ? categoryLessons.findIndex(l => !progMap.get(l.id)?.completed)
+              : -1;
 
             return (
               <section key={category}>
@@ -216,15 +242,29 @@ export default function GrammarListClient({ lessons, progress }: GrammarListClie
                       {categoryLessons[0].level}
                     </Badge>
                   </div>
-                  <span className="text-xs tabular-nums" style={{ color: 'var(--muted)' }}>
-                    {done}/{categoryLessons.length}
-                  </span>
+
+                  {allDone ? (
+                    <span
+                      className="flex items-center gap-1 text-xs font-semibold"
+                      style={{ color: 'var(--sage-ink)' }}
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      Завършено
+                    </span>
+                  ) : (
+                    <span className="text-xs tabular-nums" style={{ color: 'var(--muted)' }}>
+                      {doneCount}/{categoryLessons.length} урока
+                    </span>
+                  )}
                 </div>
 
                 <div className="h-1 rounded-full mb-4 overflow-hidden" style={{ background: 'var(--line)' }}>
                   <div
-                    className="h-full rounded-full transition-all"
-                    style={{ width: `${pct}%`, background: 'var(--lav-ink)' }}
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width:      `${pct}%`,
+                      background: allDone ? 'var(--sage-ink)' : 'var(--lav-ink)',
+                    }}
                   />
                 </div>
 
@@ -238,6 +278,7 @@ export default function GrammarListClient({ lessons, progress }: GrammarListClie
                         index={i}
                         done={p?.completed ?? false}
                         score={p?.score}
+                        isNext={i === nextIdx}
                       />
                     );
                   })}
