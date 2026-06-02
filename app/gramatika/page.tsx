@@ -1,6 +1,7 @@
 import { PenLine } from 'lucide-react';
 import ModuleHero from '@/components/modules/ModuleHero';
 import GrammarListClient from '@/components/grammar/GrammarListClient';
+import ContinueBanner from '@/components/modules/ContinueBanner';
 import { createClient } from '@/lib/supabase/server';
 import type { GrammarLesson, UserLessonProgress } from '@/lib/types/database';
 import type { Metadata } from 'next';
@@ -25,6 +26,21 @@ export default async function GramatikaPage() {
   const progress: UserLessonProgress[]  = (progressRes.data ?? []) as UserLessonProgress[];
   const completedCount = progress.filter(p => p.completed).length;
 
+  // ── "Continue" banner logic ──────────────────────────────────────────────
+  let continueLesson: GrammarLesson | null = null;
+  if (user && progress.length > 0) {
+    const doneIds    = new Set(progress.filter(p => p.completed).map(p => p.lesson_id));
+    const startedIds = new Set(progress.filter(p => !p.completed).map(p => p.lesson_id));
+    // Prefer a started-but-not-done lesson
+    continueLesson = lessons.find(l => startedIds.has(l.id)) ?? null;
+    if (!continueLesson && doneIds.size > 0) {
+      // Next lesson after the last completed one
+      const doneList    = lessons.filter(l => doneIds.has(l.id));
+      const lastDoneIdx = lessons.indexOf(doneList[doneList.length - 1]);
+      continueLesson    = lessons[lastDoneIdx + 1] ?? null;
+    }
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
       <ModuleHero
@@ -42,6 +58,15 @@ export default async function GramatikaPage() {
           { label: 'Прогрес',    value: lessons.length > 0 ? `${Math.round((completedCount / lessons.length) * 100)}%` : '0%' },
         ]}
       />
+
+      {continueLesson && (
+        <ContinueBanner
+          href={`/gramatika/${continueLesson.slug}`}
+          title={continueLesson.title}
+          level={continueLesson.level}
+          badgeColor="lavender"
+        />
+      )}
 
       {lessons.length === 0 ? (
         <div className="py-16 text-center text-sm" style={{ color: 'var(--muted)' }}>

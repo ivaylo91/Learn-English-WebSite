@@ -1,6 +1,7 @@
 import { BookOpen } from 'lucide-react';
 import ModuleHero from '@/components/modules/ModuleHero';
 import ReadingListClient from '@/components/reading/ReadingListClient';
+import ContinueBanner from '@/components/modules/ContinueBanner';
 import { createClient } from '@/lib/supabase/server';
 import type { Metadata } from 'next';
 
@@ -29,6 +30,19 @@ export default async function ChetenePage() {
   const completedCount = progress.filter(p => p.completed).length;
   const totalWords     = texts.reduce((sum, t) => sum + t.reading_time_minutes * 200, 0);
 
+  // Continue banner
+  let continueText: typeof texts[0] | null = null;
+  if (user && progress.length > 0) {
+    const doneIds    = new Set(progress.filter(p => p.completed).map(p => p.content_id));
+    const startedIds = new Set(progress.filter(p => !p.completed).map(p => p.content_id));
+    continueText = texts.find(t => startedIds.has(t.id)) ?? null;
+    if (!continueText && doneIds.size > 0) {
+      const doneList = texts.filter(t => doneIds.has(t.id));
+      const lastIdx  = texts.indexOf(doneList[doneList.length - 1]);
+      continueText   = texts[lastIdx + 1] ?? null;
+    }
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
       <ModuleHero
@@ -46,6 +60,15 @@ export default async function ChetenePage() {
           { label: 'Думи общо', value: `${totalWords.toLocaleString()}+` },
         ]}
       />
+
+      {continueText && (
+        <ContinueBanner
+          href={`/chetene/${continueText.slug}`}
+          title={continueText.title}
+          level={continueText.level}
+          badgeColor="sage"
+        />
+      )}
 
       {texts.length === 0 ? (
         <div className="py-16 text-center text-sm" style={{ color: 'var(--muted)' }}>

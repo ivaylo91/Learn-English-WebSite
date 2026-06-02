@@ -1,6 +1,7 @@
 import { Headphones } from 'lucide-react';
 import ModuleHero from '@/components/modules/ModuleHero';
 import ListeningListClient from '@/components/listening/ListeningListClient';
+import ContinueBanner from '@/components/modules/ContinueBanner';
 import { createClient } from '@/lib/supabase/server';
 import type { Metadata } from 'next';
 
@@ -29,6 +30,19 @@ export default async function SlushamPage() {
   const completedCount = progress.filter(p => p.completed).length;
   const totalMinutes   = clips.reduce((sum, c) => sum + Math.round(c.duration_seconds / 60), 0);
 
+  // Continue banner
+  let continueClip: typeof clips[0] | null = null;
+  if (user && progress.length > 0) {
+    const doneIds    = new Set(progress.filter(p => p.completed).map(p => p.content_id));
+    const startedIds = new Set(progress.filter(p => !p.completed).map(p => p.content_id));
+    continueClip = clips.find(c => startedIds.has(c.id)) ?? null;
+    if (!continueClip && doneIds.size > 0) {
+      const doneList = clips.filter(c => doneIds.has(c.id));
+      const lastIdx  = clips.indexOf(doneList[doneList.length - 1]);
+      continueClip   = clips[lastIdx + 1] ?? null;
+    }
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
       <ModuleHero
@@ -46,6 +60,15 @@ export default async function SlushamPage() {
           { label: 'Минути',    value: `${totalMinutes}` },
         ]}
       />
+
+      {continueClip && (
+        <ContinueBanner
+          href={`/slusham/${continueClip.id}`}
+          title={continueClip.title}
+          level={continueClip.level}
+          badgeColor="sky"
+        />
+      )}
 
       {clips.length === 0 ? (
         <div className="py-16 text-center text-sm" style={{ color: 'var(--muted)' }}>

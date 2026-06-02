@@ -1,6 +1,7 @@
 import { Pencil } from 'lucide-react';
 import ModuleHero from '@/components/modules/ModuleHero';
 import WritingListClient from '@/components/writing/WritingListClient';
+import ContinueBanner from '@/components/modules/ContinueBanner';
 import { createClient } from '@/lib/supabase/server';
 import type { WritingExercise, UserWritingProgress } from '@/lib/types/database';
 import type { Metadata } from 'next';
@@ -25,6 +26,19 @@ export default async function PisanePage() {
   const progress: UserWritingProgress[]    = (progressRes.data ?? []) as UserWritingProgress[];
   const completedCount = progress.filter(p => p.completed).length;
 
+  // Continue banner
+  let continueExercise: WritingExercise | null = null;
+  if (user && progress.length > 0) {
+    const doneIds    = new Set(progress.filter(p => p.completed).map(p => p.exercise_id));
+    const startedIds = new Set(progress.filter(p => !p.completed).map(p => p.exercise_id));
+    continueExercise = exercises.find(e => startedIds.has(e.id)) ?? null;
+    if (!continueExercise && doneIds.size > 0) {
+      const doneList = exercises.filter(e => doneIds.has(e.id));
+      const lastIdx  = exercises.indexOf(doneList[doneList.length - 1]);
+      continueExercise = exercises[lastIdx + 1] ?? null;
+    }
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
       <ModuleHero
@@ -42,6 +56,15 @@ export default async function PisanePage() {
           { label: 'Прогрес',     value: exercises.length > 0 ? `${Math.round((completedCount / exercises.length) * 100)}%` : '0%' },
         ]}
       />
+
+      {continueExercise && (
+        <ContinueBanner
+          href={`/pisane/${continueExercise.slug}`}
+          title={continueExercise.title}
+          level={continueExercise.level}
+          badgeColor="butter"
+        />
+      )}
 
       {exercises.length === 0 ? (
         <div className="py-16 text-center text-sm" style={{ color: 'var(--muted)' }}>
