@@ -7,6 +7,7 @@ import StreakProtectionBanner from '@/components/StreakProtectionBanner';
 import AchievementShelf from '@/components/achievements/AchievementShelf';
 import DailyGoalCard from '@/components/goals/DailyGoalCard';
 import ShareCard from '@/components/napredak/ShareCard';
+import XpChart, { type DayXp } from '@/components/napredak/XpChart';
 import { checkAndUnlockAchievements } from '@/lib/actions/achievements';
 import { computeTodayProgress, checkAndLogDailyGoal, type DailyGoal } from '@/lib/actions/goals';
 import Link from 'next/link';
@@ -81,6 +82,7 @@ export default async function NapredakPage() {
     activityRes,
     activityDatesRes,
     todayActivityRes,
+    xpActivityRes,
   ] = await Promise.all([
     supabase.from('profiles').select('name, xp, streak, level, last_active_at, daily_goal').eq('id', user.id).single(),
     supabase.from('vocabulary_words').select('id', { count: 'exact', head: true }),
@@ -111,6 +113,14 @@ export default async function NapredakPage() {
       .select('module, action, metadata')
       .eq('user_id', user.id)
       .gte('created_at', `${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`),
+    // Last 30 days XP for the progress chart
+    supabase
+      .from('user_activity')
+      .select('created_at, xp_gained')
+      .eq('user_id', user.id)
+      .gt('xp_gained', 0)
+      .gte('created_at', new Date(Date.now() - 30 * 86_400_000).toISOString())
+      .order('created_at', { ascending: true }),
   ]);
 
   // Unique activity dates (YYYY-MM-DD, UTC) for streak calendar
@@ -154,6 +164,20 @@ export default async function NapredakPage() {
   const writingDone    = (writingProgressRes.data ?? []).filter(r => r.completed).length;
   const activity       = activityRes.data ?? [];
   const totalDone      = grammarDone + listeningDone + readingDone + writingDone;
+  // ── XP chart data (30-day bar chart) ────────────────────────────────────────
+  const todayUTCStr = new Date().toISOString().slice(0, 10);
+  const xpByDay: Record<string, number> = {};
+  for (const row of (xpActivityRes.data ?? [])) {
+    const day = row.created_at.slice(0, 10);
+    xpByDay[day] = (xpByDay[day] ?? 0) + (row.xp_gained as number);
+  }
+  const chartData: DayXp[] = Array.from({ length: 30 }, (_, i) => {
+    const d    = new Date(Date.now() - (29 - i) * 86_400_000);
+    const date = d.toISOString().slice(0, 10);
+    return { date, xp: xpByDay[date] ?? 0, isToday: date === todayUTCStr };
+  });
+  const chartTotal = Object.values(xpByDay).reduce((s, v) => s + v, 0);
+
   const dailyGoal      = ((profile?.daily_goal ?? 'standard') as DailyGoal);
   const todayProgress  = computeTodayProgress(
     (todayActivityRes.data ?? []) as { module: string; action: string; metadata: Record<string, unknown> }[]
@@ -252,6 +276,11 @@ export default async function NapredakPage() {
           <h2 className="text-lg font-bold" style={{ color: 'var(--ink)' }}>Дневна цел</h2>
         </div>
         <DailyGoalCard goal={dailyGoal} today={todayProgress} />
+      </section>
+
+      {/* XP chart */}
+      <section className="mb-10">
+        <XpChart data={chartData} total={chartTotal} />
       </section>
 
       {/* Streak calendar */}
