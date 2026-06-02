@@ -1,5 +1,5 @@
-function Sk({ className }: { className?: string }) {
-  return <div className={`skeleton rounded-xl ${className ?? ''}`} />;
+function Sk({ className, style }: { className?: string; style?: React.CSSProperties }) {
+  return <div className={`skeleton rounded-xl ${className ?? ''}`} style={style} />;
 }
 
 export default function LessonLoading() {
