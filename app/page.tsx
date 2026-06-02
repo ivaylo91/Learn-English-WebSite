@@ -21,7 +21,7 @@ const LEVEL_BAR: Record<string, number> = {
   A1: 10, A2: 20, B1: 40, B2: 60, C1: 80, C2: 100,
 };
 
-function HeroCard({ word }: { word: WordOfDay | null }) {
+function HeroCard({ word, wordCount }: { word: WordOfDay | null; wordCount: number }) {
   const w = word ?? {
     word_en: 'Resilient',
     word_bg: 'устойчив',
@@ -79,23 +79,25 @@ function HeroCard({ word }: { word: WordOfDay | null }) {
         </div>
       </div>
 
-      {/* Floating stat badge */}
+      {/* Floating word-count badge */}
       <div
         className="animate-float-alt absolute top-8 -right-2 md:right-0 rounded-2xl px-4 py-3 z-20"
         style={{ background: "var(--surface)", border: "1px solid var(--line)", boxShadow: "var(--shadow-md)" }}
       >
-        <p className="text-xl font-extrabold" style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}>12k+</p>
-        <p className="text-xs" style={{ color: "var(--muted)" }}>активни</p>
+        <p className="text-xl font-extrabold" style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}>
+          {wordCount > 0 ? `${wordCount}+` : '✓'}
+        </p>
+        <p className="text-xs" style={{ color: "var(--muted)" }}>{wordCount > 0 ? 'думи' : 'безплатно'}</p>
       </div>
 
-      {/* Streak badge */}
+      {/* Free badge */}
       <div
         className="absolute -bottom-2 -left-2 md:left-0 rounded-2xl px-4 py-3 z-20"
         style={{ background: "var(--surface)", border: "1px solid var(--line)", boxShadow: "var(--shadow-md)" }}
       >
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full" style={{ background: "var(--sage-ink)" }} />
-          <span className="text-xs font-semibold" style={{ color: "var(--ink-2)" }}>онлайн сега</span>
+          <span className="text-xs font-semibold" style={{ color: "var(--ink-2)" }}>100% безплатно</span>
         </div>
       </div>
     </div>
@@ -174,44 +176,6 @@ function ModuleCard({
   );
 }
 
-const modules: ModuleCardProps[] = [
-  {
-    href: "/rechnik", icon: BookMarked,
-    title: "Речник", badge: "Флаш карти", badgeColor: "coral",
-    description: "Над 2 000 думи по теми и ниво. Умно повторение — системата запомня кое знаеш.",
-    count: "2 000+ думи",
-    iconBg: "var(--coral-soft)", iconColor: "var(--coral-ink)",
-  },
-  {
-    href: "/gramatika", icon: PenLine,
-    title: "Граматика", badge: "Упражнения", badgeColor: "lavender",
-    description: "120 урока с ясни обяснения на български и интерактивни тестове.",
-    count: "120 урока",
-    iconBg: "var(--lavender)", iconColor: "var(--lav-ink)",
-  },
-  {
-    href: "/slusham", icon: Headphones,
-    title: "Слушане", badge: "Аудио", badgeColor: "sky",
-    description: "Автентични клипове с носители на езика и въпроси за разбиране.",
-    count: "80+ клипа",
-    iconBg: "var(--sky)", iconColor: "var(--sky-ink)",
-  },
-  {
-    href: "/chetene", icon: BookOpen,
-    title: "Четене", badge: "Текстове", badgeColor: "sage",
-    description: "Текстове от A1 до C1 с речник на непознати думи с едно кликване.",
-    count: "150+ текста",
-    iconBg: "var(--sage)", iconColor: "var(--sage-ink)",
-  },
-  {
-    href: "/pisane", icon: Pencil,
-    title: "Писане", badge: "Упражнения", badgeColor: "butter",
-    description: "Попълни пропуска, преведи изречение или завърши текст — с моментална проверка.",
-    count: "50+ задачи",
-    iconBg: "var(--butter)", iconColor: "var(--butter-ink)",
-  },
-];
-
 const features = [
   "Персонализирани уроци",
   "Напредък в реално време",
@@ -219,24 +183,82 @@ const features = [
   "Без реклами",
 ];
 
-const stats = [
-  { value: "12 847", label: "ученици" },
-  { value: "4.9",    label: "оценка"  },
-  { value: "93%",    label: "завършват" },
-  { value: "3×",     label: "по-бързо" },
-];
+// stats built dynamically in HomePage
 
 export default async function HomePage() {
   const supabase = await createClient();
 
-  // Fetch auth + word count in parallel
-  const [{ data: { user } }, countRes] = await Promise.all([
+  // Fetch auth + all content counts in parallel
+  const [
+    { data: { user } },
+    vocabRes,
+    grammarRes,
+    listeningRes,
+    readingRes,
+    writingRes,
+  ] = await Promise.all([
     supabase.auth.getUser(),
-    supabase.from('vocabulary_words').select('id', { count: 'exact', head: true }),
+    supabase.from('vocabulary_words') .select('id', { count: 'exact', head: true }),
+    supabase.from('grammar_lessons')  .select('id', { count: 'exact', head: true }),
+    supabase.from('listening_clips')  .select('id', { count: 'exact', head: true }),
+    supabase.from('reading_texts')    .select('id', { count: 'exact', head: true }),
+    supabase.from('writing_exercises').select('id', { count: 'exact', head: true }),
   ]);
 
   // Deterministic daily word: days-since-epoch % total
-  const wordCount = countRes.count ?? 0;
+  const wordCount     = vocabRes.count     ?? 0;
+  const grammarCount  = grammarRes.count   ?? 0;
+  const listeningCount= listeningRes.count ?? 0;
+  const readingCount  = readingRes.count   ?? 0;
+  const writingCount  = writingRes.count   ?? 0;
+
+  // ── Dynamic module cards ───────────────────────────────────────────────────
+  const modules: ModuleCardProps[] = [
+    {
+      href: "/rechnik", icon: BookMarked,
+      title: "Речник", badge: "Флаш карти", badgeColor: "coral",
+      description: "Думи по теми и ниво с умно SM-2 повторение — системата запомня кое знаеш.",
+      count: `${wordCount} ${wordCount === 1 ? 'дума' : 'думи'}`,
+      iconBg: "var(--coral-soft)", iconColor: "var(--coral-ink)",
+    },
+    {
+      href: "/gramatika", icon: PenLine,
+      title: "Граматика", badge: "Упражнения", badgeColor: "lavender",
+      description: "Уроци с ясни обяснения на български, примери и интерактивни тестове.",
+      count: `${grammarCount} ${grammarCount === 1 ? 'урок' : 'урока'}`,
+      iconBg: "var(--lavender)", iconColor: "var(--lav-ink)",
+    },
+    {
+      href: "/slusham", icon: Headphones,
+      title: "Слушане", badge: "Аудио", badgeColor: "sky",
+      description: "Клипове с носители на езика и въпроси за разбиране.",
+      count: `${listeningCount} ${listeningCount === 1 ? 'клип' : 'клипа'}`,
+      iconBg: "var(--sky)", iconColor: "var(--sky-ink)",
+    },
+    {
+      href: "/chetene", icon: BookOpen,
+      title: "Четене", badge: "Текстове", badgeColor: "sage",
+      description: "Текстове от A1 до C1 с речник на непознати думи с едно кликване.",
+      count: `${readingCount} ${readingCount === 1 ? 'текст' : 'текста'}`,
+      iconBg: "var(--sage)", iconColor: "var(--sage-ink)",
+    },
+    {
+      href: "/pisane", icon: Pencil,
+      title: "Писане", badge: "Упражнения", badgeColor: "butter",
+      description: "Попълни пропуска, преведи изречение или завърши текст — с моментална проверка.",
+      count: `${writingCount} ${writingCount === 1 ? 'задача' : 'задачи'}`,
+      iconBg: "var(--butter)", iconColor: "var(--butter-ink)",
+    },
+  ];
+
+  // ── Dynamic stats strip ────────────────────────────────────────────────────
+  const totalContent = grammarCount + listeningCount + readingCount + writingCount;
+  const stats = [
+    { value: `${wordCount}+`,      label: 'думи в речника'      },
+    { value: `${grammarCount}+`,   label: 'граматични урока'    },
+    { value: `${totalContent}+`,   label: 'упражнения и текста' },
+    { value: '100%',               label: 'безплатно'           },
+  ];
   const dayNumber = Math.floor(Date.now() / 86_400_000);
   const offset    = wordCount > 0 ? dayNumber % wordCount : 0;
 
@@ -362,7 +384,7 @@ export default async function HomePage() {
 
           {/* RIGHT — flashcard visual */}
           <div className="animate-fade-in" style={{ animationDelay: "200ms" }}>
-            <HeroCard word={wordOfDay} />
+            <HeroCard word={wordOfDay} wordCount={wordCount} />
           </div>
         </div>
       </section>
@@ -441,7 +463,7 @@ export default async function HomePage() {
               Направи първата стъпка.
             </h2>
             <p className="max-w-[44ch] text-sm leading-relaxed" style={{ color: "var(--ink-2)" }}>
-              Присъедини се към над 12 000 ученици и започни да учиш английски по-бързо.
+              Започни да учиш английски с флаш карти, граматика и упражнения — всичко безплатно.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 shrink-0">
