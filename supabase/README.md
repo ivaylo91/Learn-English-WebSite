@@ -164,6 +164,17 @@ supabase/seed_reading_extended.sql
 ```
 Run after `seed_reading.sql`. 8 more texts: My Family (A1); Food Around the World, A Typical School Day (A2); Social Media and Young People, The History of the Internet (B1); The Psychology of Happiness, Sustainable Fashion (B2); The Ethics of Artificial Intelligence (C1).
 
+### Writing exercises (25 exercises, A1–C1)
+```
+supabase/seed_writing.sql
+```
+Run after `007_writing.sql`. 25 exercises covering:
+- **A1 (5):** to be, daily verbs, colours/adjectives, family, numbers/prices
+- **A2 (6):** shopping, past simple, daily routine, weather, questions, transport/directions
+- **B1 (6):** Present Perfect, modal verbs, conditionals 1+2, comparatives, passive voice, work vocabulary
+- **B2 (5):** third conditional, reported speech, sentence transformations, academic vocabulary, business communication
+- **C1 (3):** reformulation, formal/informal register, advanced phrases
+
 ---
 
 ## 4. Auth Setup
