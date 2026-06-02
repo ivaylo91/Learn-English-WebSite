@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { WifiOff, RefreshCw } from 'lucide-react';
+import { WifiOff } from 'lucide-react';
+import ReloadButton from './ReloadButton';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -27,15 +28,7 @@ export default function OfflinePage() {
       </p>
 
       <div className="flex flex-col sm:flex-row gap-3">
-        {/* Reload — JS needed, so use a plain button that refreshes */}
-        <button
-          onClick={() => window.location.reload()}
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white cursor-pointer active:scale-[.98] transition-all"
-          style={{ background: 'var(--coral)', boxShadow: '0 8px 16px -8px rgba(232,99,58,.5)' }}
-        >
-          <RefreshCw className="w-4 h-4" />
-          Опитай отново
-        </button>
+        <ReloadButton />
         <Link
           href="/"
           className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm cursor-pointer transition-all active:scale-[.98]"
