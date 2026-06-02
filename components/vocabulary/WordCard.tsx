@@ -2,15 +2,27 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import type { VocabularyWord } from '@/lib/types/database';
+import type { VocabularyWord, WordStatus } from '@/lib/types/database';
 import Badge from '@/components/ui/Badge';
 import { addWordToStudyList, removeWordFromStudyList } from '@/lib/db/vocabulary';
 import { Plus, Check, X } from 'lucide-react';
 
+const STATUS_LABEL: Record<WordStatus, string> = {
+  new:      'Нова',
+  learning: 'Учим',
+  known:    'Позната',
+};
+const STATUS_STYLE: Record<WordStatus, React.CSSProperties> = {
+  new:      { background: 'var(--coral-soft)', color: 'var(--coral-ink)', border: '1px solid #f4c8a8' },
+  learning: { background: 'var(--butter)',     color: 'var(--butter-ink)', border: '1px solid #e8d8a8' },
+  known:    { background: 'var(--sage)',        color: 'var(--sage-ink)',   border: '1px solid #b5d8be' },
+};
+
 interface WordCardProps {
-  word: VocabularyWord;
-  userId?: string;
+  word:         VocabularyWord;
+  userId?:      string;
   alreadyAdded?: boolean;
+  studyStatus?: WordStatus;
 }
 
 const levelColor: Record<string, 'sage' | 'sky' | 'lavender' | 'gray'> = {
@@ -19,7 +31,7 @@ const levelColor: Record<string, 'sage' | 'sky' | 'lavender' | 'gray'> = {
   C1: 'lavender', C2: 'lavender',
 };
 
-export default function WordCard({ word, userId, alreadyAdded = false }: WordCardProps) {
+export default function WordCard({ word, userId, alreadyAdded = false, studyStatus }: WordCardProps) {
   const [added,   setAdded]   = useState(alreadyAdded);
   const [loading, setLoading] = useState(false);
 
@@ -50,12 +62,14 @@ export default function WordCard({ word, userId, alreadyAdded = false }: WordCar
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-2 flex-wrap">
           <Badge color={levelColor[word.level] ?? 'gray'}>{word.level}</Badge>
-          <span
-            className="text-xs uppercase tracking-wide"
-            style={{ color: "var(--muted)" }}
-          >
+          <span className="text-xs uppercase tracking-wide" style={{ color: "var(--muted)" }}>
             {word.category}
           </span>
+          {studyStatus && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={STATUS_STYLE[studyStatus]}>
+              {STATUS_LABEL[studyStatus]}
+            </span>
+          )}
         </div>
 
         {userId && (

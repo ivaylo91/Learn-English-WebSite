@@ -19,13 +19,19 @@ export default async function RechnikPage() {
     supabase.from('vocabulary_words').select('*').order('level').order('word_en'),
     supabase.from('vocabulary_words').select('category').order('category'),
     user
-      ? supabase.from('user_word_progress').select('word_id').eq('user_id', user.id)
+      ? supabase.from('user_word_progress').select('word_id, status').eq('user_id', user.id)
       : Promise.resolve({ data: [] }),
   ]);
 
-  const allWords      = words ?? [];
-  const categories    = [...new Set((catRows ?? []).map(r => r.category))] as string[];
-  const addedWordIds  = (progressRows ?? []).map(r => r.word_id) as string[];
+  const allWords   = words ?? [];
+  const categories = [...new Set((catRows ?? []).map(r => r.category))] as string[];
+
+  // word_id → status map for the "My Words" tab
+  const progressMap: Record<string, string> = {};
+  for (const r of (progressRows ?? [])) {
+    progressMap[(r as { word_id: string; status: string }).word_id] =
+      (r as { word_id: string; status: string }).status;
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
@@ -67,8 +73,7 @@ export default async function RechnikPage() {
       </div>
 
       <section>
-        <h2 className="text-lg font-bold mb-4" style={{ color: "var(--ink)" }}>Всички думи</h2>
-        <WordListClient words={allWords} categories={categories} addedWordIds={addedWordIds} />
+        <WordListClient words={allWords} categories={categories} progressMap={progressMap} />
       </section>
     </div>
   );
