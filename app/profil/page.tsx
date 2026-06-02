@@ -3,7 +3,9 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import ProfileForm from './ProfileForm';
 import PushToggle from '@/components/profil/PushToggle';
-import { Flame, Trophy, TrendingUp, ChevronLeft, KeyRound, Target } from 'lucide-react';
+import PasswordChange from '@/components/profil/PasswordChange';
+import DeleteAccount from '@/components/profil/DeleteAccount';
+import { Flame, Trophy, TrendingUp, ChevronLeft, Target } from 'lucide-react';
 import { type DailyGoal } from '@/lib/actions/goals';
 import Badge from '@/components/ui/Badge';
 import type { Metadata } from 'next';
@@ -133,20 +135,13 @@ export default async function ProfilPage() {
         <ProfileForm userId={user.id} initName={name} initLevel={level} initEmailReminders={emailReminders} initDailyGoal={dailyGoal} />
       </div>
 
-      {/* Security */}
+      {/* Security — inline password change */}
       <div
         className="rounded-2xl p-6 mb-6"
         style={{ background: "var(--surface)", border: "1px solid var(--line)", boxShadow: "var(--shadow-sm)" }}
       >
-        <h3 className="text-base font-bold mb-4" style={{ color: "var(--ink)" }}>Сигурност</h3>
-        <Link
-          href="/forgot-password"
-          className="inline-flex items-center gap-2 text-sm font-semibold hover:underline"
-          style={{ color: "var(--coral)" }}
-        >
-          <KeyRound className="w-4 h-4" />
-          Промяна на паролата
-        </Link>
+        <h3 className="text-base font-bold mb-5" style={{ color: "var(--ink)" }}>Сигурност</h3>
+        <PasswordChange userEmail={user.email ?? ''} />
       </div>
 
       {/* Placement test */}
@@ -170,6 +165,9 @@ export default async function ProfilPage() {
 
       {/* Push notifications */}
       <PushToggle />
+
+      {/* Danger zone */}
+      <DeleteAccount />
 
     </div>
   );
