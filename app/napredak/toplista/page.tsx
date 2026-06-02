@@ -157,13 +157,20 @@ export default async function ToplistaPage() {
                     <Avatar name={row.name ?? '?'} size="sm" />
 
                     <div className="flex-1 min-w-0">
-                      <p
-                        className="text-sm font-semibold truncate"
-                        style={{ color: isMe ? 'var(--coral-ink)' : 'var(--ink)' }}
-                      >
-                        {row.name ?? 'Анонимен'}
-                        {isMe && <span className="ml-1.5 text-xs font-normal" style={{ color: 'var(--coral)' }}>(ти)</span>}
-                      </p>
+                      {isMe ? (
+                        <p className="text-sm font-semibold truncate" style={{ color: 'var(--coral-ink)' }}>
+                          {row.name ?? 'Анонимен'}
+                          <span className="ml-1.5 text-xs font-normal" style={{ color: 'var(--coral)' }}>(ти)</span>
+                        </p>
+                      ) : (
+                        <Link
+                          href={`/profil/${row.id}`}
+                          className="text-sm font-semibold truncate block hover:underline"
+                          style={{ color: 'var(--ink)' }}
+                        >
+                          {row.name ?? 'Анонимен'}
+                        </Link>
+                      )}
                     </div>
 
                     <Badge color={levelBadge[row.level] ?? 'sage'}>{row.level}</Badge>
@@ -202,6 +209,19 @@ function PodiumCard({
   tall?: boolean;
 }) {
   const theme = podiumTheme[rank - 1];
+  const nameEl = isMe ? (
+    <p className={`font-bold leading-tight truncate w-full ${tall ? 'text-base' : 'text-sm'}`}
+      style={{ color: 'var(--coral-ink)' }}>
+      {row.name ?? 'Анонимен'}
+    </p>
+  ) : (
+    <Link href={`/profil/${row.id}`}
+      className={`font-bold leading-tight truncate block hover:underline ${tall ? 'text-base' : 'text-sm'}`}
+      style={{ color: 'var(--ink)' }}>
+      {row.name ?? 'Анонимен'}
+    </Link>
+  );
+
   return (
     <div className="flex flex-col items-center gap-2 flex-1">
       {/* Medal */}
@@ -223,12 +243,7 @@ function PodiumCard({
       >
         <Avatar name={row.name ?? '?'} size={tall ? 'lg' : 'md'} />
         <div>
-          <p
-            className={`font-bold leading-tight truncate w-full ${tall ? 'text-base' : 'text-sm'}`}
-            style={{ color: isMe ? 'var(--coral-ink)' : 'var(--ink)' }}
-          >
-            {row.name ?? 'Анонимен'}
-          </p>
+          {nameEl}
           <Badge color={levelBadge[row.level] ?? 'sage'}>{row.level}</Badge>
         </div>
         <p
