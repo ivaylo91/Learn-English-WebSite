@@ -3,12 +3,15 @@
 import { useState, useEffect } from 'react';
 import { Bell, BellOff, BellRing } from 'lucide-react';
 
-// Convert base64url VAPID key to Uint8Array for pushManager.subscribe
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
+// Convert base64url VAPID key to Uint8Array<ArrayBuffer> for pushManager.subscribe
+// Using explicit allocation so TypeScript resolves to ArrayBuffer, not ArrayBufferLike
+function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
   const raw     = atob(base64);
-  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+  const arr     = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+  return arr as Uint8Array<ArrayBuffer>;
 }
 
 type PermState = 'unsupported' | 'loading' | 'denied' | 'subscribed' | 'unsubscribed';
