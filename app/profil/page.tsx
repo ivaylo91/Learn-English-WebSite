@@ -6,7 +6,7 @@ import PushToggle from '@/components/profil/PushToggle';
 import PasswordChange from '@/components/profil/PasswordChange';
 import DeleteAccount from '@/components/profil/DeleteAccount';
 import { Flame, Trophy, TrendingUp, ChevronLeft, Target } from 'lucide-react';
-import { type DailyGoal } from '@/lib/actions/goals';
+import { type DailyGoal } from '@/lib/goals-utils';
 import Badge from '@/components/ui/Badge';
 import type { Metadata } from 'next';
 import type { Level } from '@/lib/types/database';

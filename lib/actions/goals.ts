@@ -1,56 +1,16 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import {
+  computeTodayProgress,
+  GOAL_TARGETS,
+  type DailyGoal,
+} from '@/lib/goals-utils';
 
-export type DailyGoal = 'light' | 'standard' | 'intensive';
-
-export interface GoalTarget {
-  label:    string;
-  words:    number;
-  items:    number;
-  desc:     string;
-}
-
-export const GOAL_TARGETS: Record<DailyGoal, GoalTarget> = {
-  light:     { label: 'Леко',        words: 5,  items: 1, desc: '5 думи · 1 активност' },
-  standard:  { label: 'Стандарт',    words: 10, items: 2, desc: '10 думи · 2 активности' },
-  intensive: { label: 'Интензивно',  words: 20, items: 3, desc: '20 думи · 3 активности' },
-};
-
-export interface TodayProgress {
-  words: number;
-  items: number;
-}
-
-/** Compute today's words reviewed and module completions from activity rows. */
-export function computeTodayProgress(
-  rows: { module: string; action: string; metadata: Record<string, unknown> }[]
-): TodayProgress {
-  let words = 0;
-  let items = 0;
-
-  for (const row of rows) {
-    if (row.module === 'vocabulary' && row.action === 'study_session') {
-      words += (row.metadata?.words_reviewed as number) ?? 0;
-    }
-    if (
-      row.action === 'lesson_complete'  ||
-      row.action === 'exercise_complete' ||
-      row.action === 'quiz_complete'
-    ) {
-      items++;
-    }
-  }
-
-  return { words, items };
-}
-
-/**
- * Fetch today's activity rows for a user (server-side).
- */
+/** Fetch today's activity rows for a user (server-side). */
 export async function getTodayActivity(userId: string) {
-  const supabase  = await createClient();
-  const todayUTC  = new Date().toISOString().slice(0, 10);
+  const supabase = await createClient();
+  const todayUTC = new Date().toISOString().slice(0, 10);
 
   const { data } = await supabase
     .from('user_activity')
@@ -72,19 +32,19 @@ export async function checkAndLogDailyGoal(userId: string): Promise<void> {
   const [profileRes, todayRows, alreadyLoggedRes] = await Promise.all([
     supabase.from('profiles').select('daily_goal').eq('id', userId).single(),
     getTodayActivity(userId),
-    supabase.from('user_activity')
+    supabase
+      .from('user_activity')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId)
       .eq('action', 'daily_goal_complete')
       .gte('created_at', `${todayUTC}T00:00:00.000Z`),
   ]);
 
-  // Already logged today — nothing to do
   if ((alreadyLoggedRes.count ?? 0) > 0) return;
 
-  const goal    = ((profileRes.data?.daily_goal ?? 'standard') as DailyGoal);
-  const target  = GOAL_TARGETS[goal];
-  const today   = computeTodayProgress(todayRows);
+  const goal   = ((profileRes.data?.daily_goal ?? 'standard') as DailyGoal);
+  const target = GOAL_TARGETS[goal];
+  const today  = computeTodayProgress(todayRows);
 
   if (today.words >= target.words && today.items >= target.items) {
     await supabase.from('user_activity').insert({

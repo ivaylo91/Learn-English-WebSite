@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Save, CheckCircle2, AlertCircle, Bell, BellOff } from 'lucide-react';
-import { GOAL_TARGETS, type DailyGoal } from '@/lib/actions/goals';
+import { GOAL_TARGETS, type DailyGoal } from '@/lib/goals-utils';
 import { createClient } from '@/lib/supabase/client';
 import type { Level } from '@/lib/types/database';
 

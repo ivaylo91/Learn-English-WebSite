@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { CheckCircle2, BookMarked, PenLine, Settings } from 'lucide-react';
-import { GOAL_TARGETS, type DailyGoal, type TodayProgress } from '@/lib/actions/goals';
+import { GOAL_TARGETS, type DailyGoal, type TodayProgress } from '@/lib/goals-utils';
 
 interface Props {
   goal:  DailyGoal;

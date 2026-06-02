@@ -9,7 +9,8 @@ import DailyGoalCard from '@/components/goals/DailyGoalCard';
 import ShareCard from '@/components/napredak/ShareCard';
 import XpChart, { type DayXp } from '@/components/napredak/XpChart';
 import { checkAndUnlockAchievements } from '@/lib/actions/achievements';
-import { computeTodayProgress, checkAndLogDailyGoal, type DailyGoal } from '@/lib/actions/goals';
+import { checkAndLogDailyGoal } from '@/lib/actions/goals';
+import { computeTodayProgress, type DailyGoal } from '@/lib/goals-utils';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
