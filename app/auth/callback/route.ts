@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse, type NextRequest } from 'next/server';
+import { sendWelcomeEmail } from '@/lib/email/welcome';
 
 function safeRedirect(next: string | null, origin: string): string {
   if (!next || !next.startsWith('/') || next.startsWith('//')) return `${origin}/napredak`;
@@ -35,6 +36,37 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
+      // ── Welcome email (first login only) ─────────────────────────────────
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.email) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('welcome_email_sent, name')
+            .eq('id', user.id)
+            .single();
+
+          if (profile && !profile.welcome_email_sent) {
+            const displayName =
+              (profile.name as string | null)?.trim() ||
+              user.user_metadata?.name ||
+              user.email.split('@')[0];
+
+            // Mark as sent first to prevent duplicates even if send fails
+            await supabase
+              .from('profiles')
+              .update({ welcome_email_sent: true })
+              .eq('id', user.id);
+
+            // Send in background — don't block the redirect on email API latency
+            sendWelcomeEmail({ to: user.email, name: displayName, userId: user.id })
+              .catch(() => { /* silent — welcome email is non-critical */ });
+          }
+        }
+      } catch {
+        // Never break the auth flow because of email failures
+      }
+
       return NextResponse.redirect(safeRedirect(next, origin));
     }
   }

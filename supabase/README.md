@@ -78,6 +78,12 @@ supabase/migrations/009_achievements_extended.sql
 ```
 Inserts 9 new achievements (writing milestones, placement test, level milestones, 7-day goal streak, top-10 leaderboard), expanding from 16 → 25 total.
 
+### Step 10 — Welcome email flag
+```
+supabase/migrations/010_welcome_email.sql
+```
+Adds `welcome_email_sent BOOLEAN DEFAULT FALSE` to `profiles`. Set to `true` after the first welcome email is sent so it is never sent twice.
+
 ---
 
 ## 3. Seed Content (SQL Editor)
