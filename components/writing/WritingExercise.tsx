@@ -198,7 +198,7 @@ export default function WritingExercise({ exerciseId, prompts, userId, prevScore
           value={value}
           onChange={e => setValue(e.target.value)}
           onKeyDown={e => {
-            if (e.key === 'Enter') { e.preventDefault(); checked ? handleNext() : handleCheck(); }
+            if (e.key === 'Enter') { e.preventDefault(); if (checked) { handleNext(); } else { handleCheck(); } }
           }}
           disabled={checked}
           placeholder="Въведи отговора си тук…"

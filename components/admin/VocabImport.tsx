@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
+import Link from 'next/link';
 import { Upload, FileText, CheckCircle2, XCircle, AlertCircle, Download, ArrowLeft, RotateCcw } from 'lucide-react';
 import { importVocabularyWords, type VocabImportRow, type ImportResult } from '@/lib/actions/admin';
 
@@ -214,14 +215,14 @@ export default function VocabImport() {
             <RotateCcw className="w-4 h-4" />
             Нов импорт
           </button>
-          <a
+          <Link
             href="/admin/rechnik"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold cursor-pointer active:scale-[.98]"
             style={{ background: 'var(--bg-2)', color: 'var(--ink-2)', border: '1px solid var(--line)' }}
           >
             <ArrowLeft className="w-4 h-4" />
             Към речника
-          </a>
+          </Link>
         </div>
       </div>
     );

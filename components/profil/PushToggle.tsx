@@ -47,10 +47,15 @@ export default function PushToggle() {
         applicationServerKey: urlBase64ToUint8Array(vapidKey),
       });
 
-      const json    = sub.toJSON();
-      const endpoint = json.endpoint!;
-      const auth    = json.keys?.auth!;
-      const p256dh  = json.keys?.p256dh!;
+      const json     = sub.toJSON();
+      const endpoint = json.endpoint ?? '';
+      const auth     = json.keys?.auth    ?? '';
+      const p256dh   = json.keys?.p256dh  ?? '';
+
+      if (!endpoint || !auth || !p256dh) {
+        console.error('Push subscription missing required keys');
+        return;
+      }
 
       await fetch('/api/push/subscribe', {
         method:  'POST',
