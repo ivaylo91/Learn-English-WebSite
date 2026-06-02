@@ -94,3 +94,46 @@ self.addEventListener('fetch', event => {
 
   // Everything else → network-only (no SW intercept)
 });
+
+// ── Push notifications ────────────────────────────────────────────────────────
+self.addEventListener('push', event => {
+  if (!event.data) return;
+
+  let data = {};
+  try { data = event.data.json(); } catch { data = { body: event.data.text() }; }
+
+  const title = data.title ?? 'Учи Английски';
+  const body  = data.body  ?? '';
+  const url   = data.url   ?? '/';
+  const tag   = data.tag   ?? 'general';
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon:     '/icons/192',
+      badge:    '/icons/192',
+      data:     { url },
+      tag,
+      renotify: true,
+    })
+  );
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const url = event.notification.data?.url ?? '/';
+
+  event.waitUntil(
+    clients
+      .matchAll({ type: 'window', includeUncontrolled: true })
+      .then(list => {
+        for (const client of list) {
+          if (client.url.startsWith(self.location.origin) && 'focus' in client) {
+            client.navigate(url);
+            return client.focus();
+          }
+        }
+        return clients.openWindow(url);
+      })
+  );
+});

@@ -84,6 +84,12 @@ supabase/migrations/010_welcome_email.sql
 ```
 Adds `welcome_email_sent BOOLEAN DEFAULT FALSE` to `profiles`. Set to `true` after the first welcome email is sent so it is never sent twice.
 
+### Step 11 — Push notification subscriptions
+```
+supabase/migrations/011_push_subscriptions.sql
+```
+Creates `push_subscriptions` table storing VAPID endpoint + auth/p256dh keys per user. RLS allows users to manage only their own subscriptions.
+
 ---
 
 ## 3. Seed Content (SQL Editor)

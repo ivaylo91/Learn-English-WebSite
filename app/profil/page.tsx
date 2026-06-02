@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import ProfileForm from './ProfileForm';
+import PushToggle from '@/components/profil/PushToggle';
 import { Flame, Trophy, TrendingUp, ChevronLeft, KeyRound, Target } from 'lucide-react';
 import { type DailyGoal } from '@/lib/actions/goals';
 import Badge from '@/components/ui/Badge';
@@ -166,6 +167,9 @@ export default async function ProfilPage() {
           Тест за ниво
         </Link>
       </div>
+
+      {/* Push notifications */}
+      <PushToggle />
 
     </div>
   );
