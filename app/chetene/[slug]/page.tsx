@@ -44,6 +44,20 @@ export default async function ReadingTextPage({ params }: Props) {
 
   if (!text) notFound();
 
+  const BASE = 'https://uchi-angliyski.vercel.app';
+  const jsonLd = {
+    '@context':  'https://schema.org',
+    '@type':     'Article',
+    headline:    text.title,
+    description: `Текст за четене на английски ниво ${text.level} по темата „${text.topic}". Речник и въпроси за разбиране.`,
+    url:         `${BASE}/chetene/${text.slug}`,
+    inLanguage:  'en',
+    educationalLevel:     text.level,
+    learningResourceType: 'Reading',
+    author:   { '@type': 'Organization', name: 'Учи Английски', url: BASE },
+    provider: { '@type': 'Organization', name: 'Учи Английски', url: BASE },
+  };
+
   const progressRes = user
     ? await supabase
         .from('user_content_progress')
@@ -86,6 +100,7 @@ export default async function ReadingTextPage({ params }: Props) {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Link
         href="/chetene"
         className="inline-flex items-center gap-1.5 text-sm mb-6 hover:underline transition-colors"

@@ -45,6 +45,20 @@ export default async function LessonPage({ params }: Props) {
 
   if (!lesson) notFound();
 
+  const BASE = 'https://uchi-angliyski.vercel.app';
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type':    'LearningResource',
+    name:        lesson.title,
+    description: `Урок по английска граматика: ${lesson.title}. Обяснение на български с интерактивно упражнение. Ниво ${lesson.level}.`,
+    url:         `${BASE}/gramatika/${lesson.slug}`,
+    educationalLevel:     lesson.level,
+    learningResourceType: 'Lesson',
+    teaches:     'English grammar',
+    inLanguage:  'bg',
+    provider: { '@type': 'Organization', name: 'Учи Английски', url: BASE },
+  };
+
   const [progressRes, siblingsRes] = await Promise.all([
     user
       ? supabase
@@ -94,6 +108,7 @@ export default async function LessonPage({ params }: Props) {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm mb-6" style={{ color: 'var(--muted)' }}>
         <Link href="/gramatika" className="transition-colors hover:underline" style={{ color: 'var(--lav-ink)' }}>

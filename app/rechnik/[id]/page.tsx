@@ -49,7 +49,21 @@ export default async function WordDetailPage({ params }: Props) {
   ]);
 
   if (!wordRes.data) notFound();
-  const word    = wordRes.data;
+  const word = wordRes.data;
+
+  const BASE   = 'https://uchi-angliyski.vercel.app';
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type':    'DefinedTerm',
+    name:        word.word_en,
+    description: `${word.word_en} — ${word.word_bg}. Английска дума ниво ${word.level}${word.phonetic ? `, произношение ${word.phonetic}` : ''}.`,
+    url:         `${BASE}/rechnik/${word.id}`,
+    inDefinedTermSet: {
+      '@type': 'DefinedTermSet',
+      name:    'Учи Английски — Речник',
+      url:     `${BASE}/rechnik`,
+    },
+  };
   const isAdded = progressRes.data !== null;
 
   const { data: similar } = await supabase
@@ -74,6 +88,7 @@ export default async function WordDetailPage({ params }: Props) {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Link
         href="/rechnik"
         className="inline-flex items-center gap-1.5 text-sm font-medium hover:underline mb-6"
