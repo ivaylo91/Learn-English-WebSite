@@ -6,6 +6,7 @@ import {
 import Badge from "@/components/ui/Badge";
 import OnboardingBanner from "@/components/OnboardingBanner";
 import StreakProtectionBanner from "@/components/StreakProtectionBanner";
+import PersonalHero from "@/components/home/PersonalHero";
 import { createClient } from "@/lib/supabase/server";
 
 /* ─── Flashcard hero visual ─── */
@@ -262,10 +263,11 @@ export default async function HomePage() {
   const dayNumber = Math.floor(Date.now() / 86_400_000);
   const offset    = wordCount > 0 ? dayNumber % wordCount : 0;
 
-  // Fetch profile (if logged in) + word of the day in parallel
-  const [profileRes, wordRes] = await Promise.all([
+  // Fetch profile, word of the day, and (for logged-in users) due count + today's XP
+  const todayUTC = new Date().toISOString().slice(0, 10);
+  const [profileRes, wordRes, dueRes, todayXpRes] = await Promise.all([
     user
-      ? supabase.from('profiles').select('name, xp, streak, last_active_at').eq('id', user.id).single()
+      ? supabase.from('profiles').select('name, xp, streak, level, last_active_at').eq('id', user.id).single()
       : Promise.resolve({ data: null }),
     wordCount > 0
       ? supabase
@@ -275,37 +277,72 @@ export default async function HomePage() {
           .range(offset, offset)
           .single()
       : Promise.resolve({ data: null }),
+    // Due-word count for the personal hero
+    user
+      ? supabase
+          .from('user_word_progress')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .lte('next_review_at', new Date().toISOString())
+          .neq('status', 'known')
+      : Promise.resolve({ count: 0 }),
+    // Today's XP for the personal hero
+    user
+      ? supabase
+          .from('user_activity')
+          .select('xp_gained')
+          .eq('user_id', user.id)
+          .gte('created_at', `${todayUTC}T00:00:00.000Z`)
+      : Promise.resolve({ data: [] }),
   ]);
 
   const wordOfDay = wordRes.data as WordOfDay | null;
+  const dueCount  = dueRes.count ?? 0;
+  const todayXp   = (todayXpRes.data ?? []).reduce((s, r) => s + ((r as { xp_gained: number }).xp_gained ?? 0), 0);
+
+  type ProfileRow = { name: string | null; xp: number; streak: number; level: string; last_active_at: string | null };
+  const profile = profileRes.data as ProfileRow | null;
 
   let onboardingName: string | null = null;
-  let streakAtRisk = false;
-  if (user) {
-    const profile = profileRes.data as { name: string | null; xp: number; streak: number; last_active_at: string | null } | null;
-    if (profile) {
-      if (profile.xp === 0) {
-        onboardingName =
-          profile.name ||
-          user.user_metadata?.name ||
-          user.email?.split('@')[0] ||
-          'приятел';
-      }
-      const todayUTC = new Date().toISOString().slice(0, 10);
-      streakAtRisk =
-        profile.streak > 0 &&
-        (profile.last_active_at?.slice(0, 10) ?? '') < todayUTC;
+  let streakAtRisk   = false;
+  let showPersonalHero = false;
+
+  if (user && profile) {
+    if (profile.xp === 0) {
+      onboardingName =
+        profile.name ||
+        user.user_metadata?.name ||
+        user.email?.split('@')[0] ||
+        'приятел';
+    } else {
+      showPersonalHero = true;
     }
+    streakAtRisk =
+      profile.streak > 0 &&
+      (profile.last_active_at?.slice(0, 10) ?? '') < todayUTC;
   }
 
   return (
     <div className="overflow-hidden">
       {onboardingName && <OnboardingBanner name={onboardingName} />}
-      {streakAtRisk && profileRes.data && (
-        <StreakProtectionBanner streak={(profileRes.data as { streak: number }).streak} />
+      {streakAtRisk && profile && (
+        <StreakProtectionBanner streak={profile.streak} />
       )}
 
-      {/* ── Split-screen Hero ── */}
+      {/* ── Returning user: personal dashboard ── */}
+      {showPersonalHero && profile && (
+        <PersonalHero
+          name={profile.name?.trim() || user?.email?.split('@')[0] || 'Потребителю'}
+          level={profile.level ?? 'A1'}
+          xp={profile.xp}
+          streak={profile.streak}
+          dueCount={dueCount}
+          todayXp={todayXp}
+        />
+      )}
+
+      {/* ── New visitors: split-screen marketing hero ── */}
+      {!showPersonalHero && (
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[100dvh] flex flex-col justify-center py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 items-center">
 
@@ -388,6 +425,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      )} {/* end !showPersonalHero */}
 
       {/* ── Stats strip ── */}
       <section style={{ borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)", background: "var(--surface)" }}>
