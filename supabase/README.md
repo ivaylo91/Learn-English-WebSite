@@ -113,6 +113,16 @@ Work, Health, Education, Nature (B1)
 Personality, Society, Technology (B2)
 Academic, Advanced Character (C1)
 
+### Vocabulary words — v2 gap-fill (153 words, A2–B2)
+```
+supabase/seed_vocabulary_v2.sql
+```
+Run after `seed_vocabulary_extended.sql`. Fills missing A2–B2 categories:
+Shopping, Relationships, Leisure/Hobbies, Restaurant, Time Expressions (A2)
+Finance/Money, Sport, Environment/Ecology, Technology Basics (B1)
+Media & News, Describing/Character (B2)
+**Total after all three vocab seeds: ~481 words.**
+
 ### Grammar lesson content — A1 to B2 (14 lessons)
 ```
 supabase/seed_grammar_content.sql
