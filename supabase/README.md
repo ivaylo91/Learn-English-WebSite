@@ -90,11 +90,22 @@ Adds `welcome_email_sent BOOLEAN DEFAULT FALSE` to `profiles`. Set to `true` aft
 
 Run these after all migrations are applied:
 
-### Vocabulary words (~52 words, A1–C1)
+### Vocabulary words — starter set (~52 words, A1–C1)
 ```
 supabase/seed.sql
 ```
 Also includes the 14 grammar lesson stubs (slugs + titles, no content yet).
+
+### Vocabulary words — extended set (276 words, A1–C1)
+```
+supabase/seed_vocabulary_extended.sql
+```
+Run after `seed.sql`. Adds 276 words across 18 categories:
+Colors, Body, Food & Drink, Clothing, Animals, Daily Verbs, Places, Adjectives (A1)
+Travel, Home, Weather, Emotions (A2)
+Work, Health, Education, Nature (B1)
+Personality, Society, Technology (B2)
+Academic, Advanced Character (C1)
 
 ### Grammar lesson content — A1 to B2 (14 lessons)
 ```
