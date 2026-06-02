@@ -199,7 +199,13 @@ The `handle_new_user()` trigger automatically creates a `profiles` row on sign-u
 
 ## 5. Storage — Audio Files
 
-The admin panel uploads directly to Supabase Storage. To enable it:
+**Generated MP3 files are in `public/audio/`** (12 files, 275 KB–787 KB each, 35–100 s).
+Synthesised with Google Translate TTS via `scripts/audio/generate.js`.
+
+To regenerate (if transcripts change):
+```bash
+node scripts/audio/generate.js
+```
 
 **Step A — Create the bucket**
 
@@ -223,7 +229,18 @@ ON storage.objects FOR DELETE TO authenticated
 USING (bucket_id = 'audio');
 ```
 
-Then go to **Admin → Слушане → [edit clip]** and click "Качи .mp3".
+**Step C — Upload all MP3 files**
+
+Drag all files from `public/audio/` into the `audio` bucket via Supabase Dashboard → Storage.
+
+**Step D — Update database URLs automatically**
+
+```bash
+node scripts/audio/update-urls.js
+```
+
+Sets `audio_url` on every clip to `<supabase-url>/storage/v1/object/public/audio/<slug>.mp3`.
+Requires `.env.local` with `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
 
 ---
 
