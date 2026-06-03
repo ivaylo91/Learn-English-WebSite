@@ -194,6 +194,17 @@ Run after `007_writing.sql`. 25 exercises covering:
 - **B2 (5):** third conditional, reported speech, sentence transformations, academic vocabulary, business communication
 - **C1 (3):** reformulation, formal/informal register, advanced phrases
 
+### Writing exercises — v2 (14 exercises, A2–C1)
+```
+supabase/seed_writing_v2.sql
+```
+Run after `seed_writing.sql`. 14 more exercises (39 total):
+- **Collocations (B1–B2):** make/do, have/take, adjective+noun (strong/heavy/big), preposition phrases (good at, depend on)
+- **Phrasal verbs (B1–C1):** get (get up/over/on), put (put off/up with/away), come+take (come across/up with/take over), advanced (bring about, carry out, look into)
+- **False friends (A2–B2):** basic (actually, magazine, eventually), intermediate (borrow/lend, say/tell), advanced (sensible/sensitive, comprehensive)
+- **Confusable words (B1):** look/see/watch, hear/listen/bring/take
+- **Word families (B2):** success/succeed/successful, analysis/analyse, contribution/contribute
+
 ---
 
 ## 4. Auth Setup
