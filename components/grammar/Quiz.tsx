@@ -1,16 +1,20 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import type { QuizQuestion } from '@/lib/types/database';
-import { CheckCircle2, XCircle, Trophy, ChevronRight, RotateCcw } from 'lucide-react';
+import { CheckCircle2, XCircle, Trophy, ChevronRight, RotateCcw, ArrowRight } from 'lucide-react';
+
+interface NextLesson { title: string; slug: string; level: string; }
 
 interface QuizProps {
-  questions: QuizQuestion[];
+  questions:     QuizQuestion[];
   previousScore?: number;
-  onComplete: (score: number) => Promise<void>;
+  onComplete:    (score: number) => Promise<void>;
+  nextLesson?:   NextLesson;
 }
 
-export default function Quiz({ questions, previousScore, onComplete }: QuizProps) {
+export default function Quiz({ questions, previousScore, onComplete, nextLesson }: QuizProps) {
   const [qIndex,   setQIndex]   = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [answers,  setAnswers]  = useState<boolean[]>([]);
@@ -99,6 +103,40 @@ export default function Quiz({ questions, previousScore, onComplete }: QuizProps
             <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>Правилни</p>
           </div>
         </div>
+
+        {/* Next lesson card — shown when passed and there's a next lesson */}
+        {passed && nextLesson && (
+          <Link
+            href={`/gramatika/${nextLesson.slug}`}
+            className="group flex items-center justify-between gap-4 w-full mb-6 px-5 py-4 rounded-2xl text-left transition-all hover:-translate-y-0.5 active:scale-[.98]"
+            style={{
+              background: 'linear-gradient(135deg, var(--lavender) 0%, #d4c5f0 100%)',
+              border: '1px solid #c9bce4',
+            }}
+          >
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[.12em] mb-0.5" style={{ color: 'var(--lav-ink)', opacity: 0.7 }}>
+                Следващ урок
+              </p>
+              <p className="text-sm font-bold truncate" style={{ color: 'var(--ink)' }}>
+                {nextLesson.title}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <span
+                className="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                style={{ background: 'rgba(255,255,255,0.6)', color: 'var(--lav-ink)' }}
+              >
+                {nextLesson.level}
+              </span>
+              <ArrowRight
+                className="w-4 h-4 group-hover:translate-x-0.5 transition-transform"
+                style={{ color: 'var(--lav-ink)' }}
+              />
+            </div>
+          </Link>
+        )}
+
         {!passed && (
           <button
             onClick={handleRetry}

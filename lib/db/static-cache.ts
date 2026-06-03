@@ -46,7 +46,7 @@ export const getCachedGrammarLesson = unstable_cache(
 
     const { data: siblings } = await db
       .from('grammar_lessons')
-      .select('slug, title, order_index')
+      .select('slug, title, level, order_index')
       .eq('category', lesson.category)
       .order('order_index');
 

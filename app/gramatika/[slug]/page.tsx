@@ -174,6 +174,9 @@ export default async function LessonPage({ params }: Props) {
             questions={lesson.questions}
             previousScore={progress?.score}
             onComplete={saveScore}
+            nextLesson={nextLesson
+              ? { title: nextLesson.title, slug: nextLesson.slug, level: (nextLesson as { level?: string }).level ?? lesson.level }
+              : undefined}
           />
         </div>
       )}
