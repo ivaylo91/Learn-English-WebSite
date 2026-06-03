@@ -3,12 +3,18 @@ import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { createClient } from '@/lib/supabase/server';
+import { getCachedReadingText, getCachedReadingSlugs } from '@/lib/db/static-cache';
 import Quiz from '@/components/grammar/Quiz';
 import Badge from '@/components/ui/Badge';
 import { ChevronLeft, Clock, BookOpen } from 'lucide-react';
 import type { Metadata } from 'next';
 
 type Props = { params: Promise<{ slug: string }> };
+
+export async function generateStaticParams() {
+  const slugs = await getCachedReadingSlugs();
+  return slugs.map(slug => ({ slug }));
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -33,16 +39,13 @@ const levelBadge: Record<string, 'sage' | 'sky' | 'lavender'> = {
 
 export default async function ReadingTextPage({ params }: Props) {
   const { slug }  = await params;
+  // Text content + siblings: cached for 1h across all users
+  const cached = await getCachedReadingText(slug);
+  if (!cached) notFound();
+  const { text } = cached;
+
   const supabase  = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-
-  const { data: text } = await supabase
-    .from('reading_texts')
-    .select('*')
-    .eq('slug', slug)
-    .single();
-
-  if (!text) notFound();
 
   const BASE = 'https://uchi-angliyski.vercel.app';
   const jsonLd = {

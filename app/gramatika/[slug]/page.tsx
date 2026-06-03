@@ -3,12 +3,19 @@ import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { createClient } from '@/lib/supabase/server';
+import { getCachedGrammarLesson, getCachedGrammarSlugs } from '@/lib/db/static-cache';
 import Quiz from '@/components/grammar/Quiz';
 import Badge from '@/components/ui/Badge';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Metadata } from 'next';
 
 type Props = { params: Promise<{ slug: string }> };
+
+// Pre-build all known lesson slugs at deploy time
+export async function generateStaticParams() {
+  const slugs = await getCachedGrammarSlugs();
+  return slugs.map(slug => ({ slug }));
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -33,17 +40,13 @@ const levelBadge: Record<string, 'sage' | 'sky' | 'lavender'> = {
 
 export default async function LessonPage({ params }: Props) {
   const { slug } = await params;
+  // Lesson content + siblings: cached for 1h across all users
+  const cached = await getCachedGrammarLesson(slug);
+  if (!cached) notFound();
+  const { lesson, siblings: allSiblings } = cached;
+
   const supabase = await createClient();
-
   const { data: { user } } = await supabase.auth.getUser();
-
-  const { data: lesson } = await supabase
-    .from('grammar_lessons')
-    .select('*')
-    .eq('slug', slug)
-    .single();
-
-  if (!lesson) notFound();
 
   const BASE = 'https://uchi-angliyski.vercel.app';
   const jsonLd = {
@@ -59,7 +62,7 @@ export default async function LessonPage({ params }: Props) {
     provider: { '@type': 'Organization', name: 'Учи Английски', url: BASE },
   };
 
-  const [progressRes, siblingsRes] = await Promise.all([
+  const [progressRes] = await Promise.all([
     user
       ? supabase
           .from('user_lesson_progress')
@@ -68,15 +71,10 @@ export default async function LessonPage({ params }: Props) {
           .eq('lesson_id', lesson.id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
-    supabase
-      .from('grammar_lessons')
-      .select('slug, title, order_index')
-      .eq('category', lesson.category)
-      .order('order_index'),
   ]);
 
   const progress   = progressRes.data;
-  const siblings   = siblingsRes.data ?? [];
+  const siblings   = allSiblings;
   const currentIdx = siblings.findIndex(s => s.slug === slug);
   const prevLesson = siblings[currentIdx - 1] ?? null;
   const nextLesson = siblings[currentIdx + 1] ?? null;
