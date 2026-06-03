@@ -27,6 +27,9 @@ function formatNextDue(iso: string): string {
 }
 
 export default function StudySession({ userId, dueWords }: StudySessionProps) {
+  // Own a mutable copy of the queue so Skip can reorder without props changes
+  const [queue,   setQueue]          = useState(() => [...dueWords]);
+  const [skippedIds, setSkippedIds]  = useState<Set<string>>(() => new Set());
   const [index, setIndex]           = useState(0);
   const [results, setResults]       = useState<{ quality: number }[]>([]);
   const [submitting, setSubmitting]  = useState(false);
@@ -40,7 +43,7 @@ export default function StudySession({ userId, dueWords }: StudySessionProps) {
     getNextDueDate(userId).then(setNextDueAt);
   }, [userId, dueWords.length]);
 
-  const current = dueWords[index];
+  const current = queue[index];
 
   const handleRate = async (quality: 0 | 3 | 5) => {
     if (!current || submitting) return;
@@ -50,10 +53,10 @@ export default function StudySession({ userId, dueWords }: StudySessionProps) {
     const newResults = [...results, { quality }];
     setResults(newResults);
 
-    if (index + 1 >= dueWords.length) {
+    if (index + 1 >= queue.length) {
       const xp = newResults.filter(r => r.quality >= 3).length * 5;
       await recordActivity(userId, 'vocabulary', 'study_session', xp, {
-        words_reviewed: dueWords.length,
+        words_reviewed: queue.length,
         passed: newResults.filter(r => r.quality >= 3).length,
       });
       const unlocked = await checkAndUnlockAchievements(userId);
@@ -64,6 +67,17 @@ export default function StudySession({ userId, dueWords }: StudySessionProps) {
     }
 
     setSubmitting(false);
+  };
+
+  const handleSkip = () => {
+    if (!current || submitting) return;
+    const wordId = current.word_id;
+    // Each word can only be skipped once — after that it must be rated
+    if (skippedIds.has(wordId)) return;
+    setSkippedIds(prev => new Set([...prev, wordId]));
+    // Move current word to end of queue
+    setQueue(prev => [...prev.slice(0, index), ...prev.slice(index + 1), prev[index]]);
+    // index stays the same — the next word slides up
   };
 
   if (dueWords.length === 0) {
@@ -164,7 +178,7 @@ export default function StudySession({ userId, dueWords }: StudySessionProps) {
     <FlashCard
       word={current.vocabulary_words}
       cardNumber={index + 1}
-      total={dueWords.length}
+      total={queue.length}
       loading={submitting}
       srsState={{
         ease_factor:   current.ease_factor,
@@ -172,6 +186,8 @@ export default function StudySession({ userId, dueWords }: StudySessionProps) {
         repetitions:   current.repetitions,
       }}
       onRate={handleRate}
+      onSkip={skippedIds.has(current.word_id) ? undefined : handleSkip}
+      skipped={skippedIds.has(current.word_id)}
     />
     </>
   );

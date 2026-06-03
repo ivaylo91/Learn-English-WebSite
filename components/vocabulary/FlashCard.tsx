@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import type { VocabularyWord } from '@/lib/types/database';
 import Badge from '@/components/ui/Badge';
 import PronounceButton from './PronounceButton';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, SkipForward } from 'lucide-react';
 
 export interface SrsState {
   ease_factor:   number;
@@ -13,12 +14,14 @@ export interface SrsState {
 }
 
 interface FlashCardProps {
-  word:      VocabularyWord;
+  word:       VocabularyWord;
   cardNumber: number;
-  total:     number;
-  loading?:  boolean;
-  srsState?: SrsState;
-  onRate:    (quality: 0 | 3 | 5) => void;
+  total:      number;
+  loading?:   boolean;
+  srsState?:  SrsState;
+  onRate:     (quality: 0 | 3 | 5) => void;
+  onSkip?:    () => void;
+  skipped?:   boolean; // true when this word was previously skipped
 }
 
 const levelBadge: Record<string, 'sage' | 'sky' | 'lavender'> = {
@@ -51,7 +54,7 @@ const RATING_BASES = [
   { quality: 5 as const, label: 'Лесно',  fallback: 'след 7 дни',    key: '3', bg: 'var(--sage)',   color: 'var(--sage-ink)',   border: '#b5d8be' },
 ];
 
-export default function FlashCard({ word, cardNumber, total, loading, srsState, onRate }: FlashCardProps) {
+export default function FlashCard({ word, cardNumber, total, loading, srsState, onRate, onSkip, skipped }: FlashCardProps) {
   const ratings = RATING_BASES.map(r => ({
     ...r,
     sub: srsState ? daysLabel(predictDays(r.quality, srsState)) : r.fallback,
@@ -148,12 +151,30 @@ export default function FlashCard({ word, cardNumber, total, loading, srsState, 
             {word.phonetic && (
               <p className="font-mono text-base" style={{ color: 'var(--muted)' }}>{word.phonetic}</p>
             )}
-            <p className="mt-8 text-sm" style={{ color: 'var(--coral)' }}>
-              Натисни или <kbd
-                className="px-1.5 py-0.5 rounded text-xs font-mono mx-0.5"
-                style={{ background: 'var(--coral-soft)', color: 'var(--coral-ink)', border: '1px solid #f4c8a8' }}
-              >Space</kbd> за превод
-            </p>
+            <div className="mt-8 flex items-center justify-between w-full">
+              <p className="text-sm" style={{ color: 'var(--coral)' }}>
+                Натисни или <kbd
+                  className="px-1.5 py-0.5 rounded text-xs font-mono mx-0.5"
+                  style={{ background: 'var(--coral-soft)', color: 'var(--coral-ink)', border: '1px solid #f4c8a8' }}
+                >Space</kbd> за превод
+              </p>
+              {onSkip && (
+                <button
+                  onClick={e => { e.stopPropagation(); onSkip(); }}
+                  className="flex items-center gap-1 text-xs cursor-pointer hover:opacity-80 transition-opacity"
+                  style={{ color: 'var(--muted)' }}
+                  title="Пропусни — ще се върне в края"
+                >
+                  <SkipForward className="w-3.5 h-3.5" />
+                  Пропусни
+                </button>
+              )}
+            </div>
+            {skipped && (
+              <p className="mt-2 text-[11px]" style={{ color: 'var(--coral)', opacity: 0.7 }}>
+                ↩ Пропусната дума
+              </p>
+            )}
           </div>
 
           {/* Back */}
@@ -169,7 +190,19 @@ export default function FlashCard({ word, cardNumber, total, loading, srsState, 
             }}
             className="rounded-3xl p-8 flex flex-col items-center justify-center select-none"
           >
-            <p className="text-xs uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.6)' }}>
+            {/* Level + category on back */}
+            <div className="flex items-center gap-2 mb-3">
+              <span
+                className="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                style={{ background: 'rgba(255,255,255,0.2)', color: '#fff' }}
+              >
+                {word.level}
+              </span>
+              <span className="text-[10px] uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                {word.category}
+              </span>
+            </div>
+            <p className="text-xs uppercase tracking-widest mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
               {word.word_en}
             </p>
             <h2 className="text-4xl font-bold text-white mb-6 text-center">
@@ -239,12 +272,22 @@ export default function FlashCard({ word, cardNumber, total, loading, srsState, 
           <span />
         )}
 
-        {/* Keyboard shortcut legend — desktop only */}
-        <p className="hidden sm:block text-xs" style={{ color: 'var(--muted)' }}>
-          {flipped
-            ? 'Клавиши: 1 · 2 · 3'
-            : 'Клавиш: Space'}
-        </p>
+        <div className="flex items-center gap-3">
+          {flipped && (
+            <Link
+              href={`/rechnik/${word.id}`}
+              onClick={e => e.stopPropagation()}
+              className="text-xs hover:underline"
+              style={{ color: 'var(--coral)' }}
+            >
+              → Виж в речника
+            </Link>
+          )}
+          {/* Keyboard shortcut legend — desktop only */}
+          <p className="hidden sm:block text-xs" style={{ color: 'var(--muted)' }}>
+            {flipped ? 'Клавиши: 1 · 2 · 3' : 'Клавиш: Space'}
+          </p>
+        </div>
       </div>
     </div>
   );
