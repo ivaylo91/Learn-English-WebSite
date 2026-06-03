@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import AudioPlayer from '@/components/listening/AudioPlayer';
 import Quiz from '@/components/grammar/Quiz';
 import Badge from '@/components/ui/Badge';
-import { ChevronLeft, Clock, BarChart2 } from 'lucide-react';
+import { ChevronLeft, Clock, BarChart2, Headphones, ArrowRight } from 'lucide-react';
 import type { Metadata } from 'next';
 
 type Props = { params: Promise<{ id: string }> };
@@ -50,17 +50,29 @@ export default async function ListeningClipPage({ params }: Props) {
 
   if (!clip) notFound();
 
-  const progressRes = user
-    ? await supabase
-        .from('user_content_progress')
-        .select('score, completed')
-        .eq('user_id', user.id)
-        .eq('content_type', 'listening')
-        .eq('content_id', id)
-        .maybeSingle()
-    : { data: null };
+  const [progressRes, nextClipRes] = await Promise.all([
+    user
+      ? supabase
+          .from('user_content_progress')
+          .select('score, completed')
+          .eq('user_id', user.id)
+          .eq('content_type', 'listening')
+          .eq('content_id', id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    // Next clip: same level, different id, ordered by created_at
+    supabase
+      .from('listening_clips')
+      .select('id, title, level, topic, duration_seconds')
+      .eq('level', clip.level)
+      .neq('id', id)
+      .order('created_at')
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
   const progress = progressRes.data;
+  const nextClip = nextClipRes.data;
   const duration = formatDuration(clip.duration_seconds);
 
   async function saveScore(score: number) {
@@ -141,7 +153,7 @@ export default async function ListeningClipPage({ params }: Props) {
       </div>
 
       {clip.questions?.length > 0 && (
-        <div>
+        <div className="mb-10">
           <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--ink)' }}>Въпроси за разбиране</h2>
           <Quiz
             questions={clip.questions}
@@ -149,6 +161,38 @@ export default async function ListeningClipPage({ params }: Props) {
             onComplete={saveScore}
           />
         </div>
+      )}
+
+      {/* Next clip card */}
+      {nextClip && (
+        <Link
+          href={`/slusham/${nextClip.id}`}
+          className="flex items-center gap-4 p-5 rounded-2xl transition-all duration-200 hover:-translate-y-0.5 group"
+          style={{ background: 'var(--sky)', border: '1px solid var(--sky-ink)20', boxShadow: 'var(--shadow-sm)' }}
+        >
+          <div
+            className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{ background: 'rgba(31,77,119,.12)' }}
+          >
+            <Headphones className="w-5 h-5" style={{ color: 'var(--sky-ink)' }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] font-bold uppercase tracking-[.1em] mb-0.5" style={{ color: 'var(--sky-ink)' }}>
+              Следващ клип
+            </p>
+            <p className="text-sm font-semibold truncate" style={{ color: 'var(--ink)' }}>
+              {nextClip.title}
+            </p>
+            <p className="text-xs" style={{ color: 'var(--muted)' }}>
+              {nextClip.level} · {nextClip.topic}
+              {nextClip.duration_seconds ? ` · ${formatDuration(nextClip.duration_seconds)}` : ''}
+            </p>
+          </div>
+          <ArrowRight
+            className="shrink-0 w-5 h-5 transition-transform duration-200 group-hover:translate-x-1"
+            style={{ color: 'var(--sky-ink)' }}
+          />
+        </Link>
       )}
     </div>
   );

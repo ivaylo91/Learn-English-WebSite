@@ -77,12 +77,40 @@ export default function AudioPlayer({ audioUrl, transcript }: AudioPlayerProps) 
     setSpeed(s);
   };
 
-  const restart = () => {
+  const restart = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
     audio.currentTime = 0;
     setCurrentTime(0);
-  };
+  }, []);
+
+  // Keyboard shortcuts — Space: play/pause, ←/→: seek ±10s, R: restart
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement).isContentEditable) return;
+      if (!hasAudio) return;
+      const audio = audioRef.current;
+      if (!audio) return;
+      if (e.key === ' ' || e.key === 'k') {
+        e.preventDefault();
+        togglePlay();
+      } else if (e.key === 'ArrowLeft' || e.key === 'j') {
+        e.preventDefault();
+        audio.currentTime = Math.max(0, audio.currentTime - 10);
+        setCurrentTime(audio.currentTime);
+      } else if (e.key === 'ArrowRight' || e.key === 'l') {
+        e.preventDefault();
+        audio.currentTime = Math.min(duration, audio.currentTime + 10);
+        setCurrentTime(audio.currentTime);
+      } else if (e.key === 'r') {
+        e.preventDefault();
+        restart();
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [togglePlay, restart, hasAudio, duration]);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -160,9 +188,14 @@ export default function AudioPlayer({ audioUrl, transcript }: AudioPlayerProps) 
               />
             </div>
 
-            {/* Time */}
+            {/* Time + keyboard hints */}
             <div className="flex justify-between text-xs tabular-nums" style={{ color: 'var(--muted)' }}>
               <span>{formatTime(currentTime)}</span>
+              <span className="hidden sm:flex items-center gap-2 text-[10px]" style={{ color: 'var(--muted)' }}>
+                <kbd className="px-1 py-0.5 rounded font-mono" style={{ background: 'var(--bg-2)', border: '1px solid var(--line)' }}>Space</kbd>
+                <kbd className="px-1 py-0.5 rounded font-mono" style={{ background: 'var(--bg-2)', border: '1px solid var(--line)' }}>← →</kbd>
+                <span>±10с</span>
+              </span>
               <span>{formatTime(duration)}</span>
             </div>
           </>
