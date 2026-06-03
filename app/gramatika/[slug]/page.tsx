@@ -7,6 +7,7 @@ import { getCachedGrammarLesson, getCachedGrammarSlugs } from '@/lib/db/static-c
 import Quiz from '@/components/grammar/Quiz';
 import Badge from '@/components/ui/Badge';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import BookmarkButton from '@/components/grammar/BookmarkButton';
 import type { Metadata } from 'next';
 
 type Props = { params: Promise<{ slug: string }> };
@@ -62,7 +63,7 @@ export default async function LessonPage({ params }: Props) {
     provider: { '@type': 'Organization', name: 'Учи Английски', url: BASE },
   };
 
-  const [progressRes] = await Promise.all([
+  const [progressRes, bookmarkRes] = await Promise.all([
     user
       ? supabase
           .from('user_lesson_progress')
@@ -71,9 +72,18 @@ export default async function LessonPage({ params }: Props) {
           .eq('lesson_id', lesson.id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
+    user
+      ? supabase
+          .from('grammar_bookmarks')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('lesson_id', lesson.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
 
   const progress   = progressRes.data;
+  const isBookmarked = !!bookmarkRes.data;
   const siblings   = allSiblings;
   const currentIdx = siblings.findIndex(s => s.slug === slug);
   const prevLesson = siblings[currentIdx - 1] ?? null;
@@ -130,17 +140,24 @@ export default async function LessonPage({ params }: Props) {
 
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-2 mb-3">
-          <Badge color={levelBadge[lesson.level] ?? 'sage'}>{lesson.level}</Badge>
-          <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--muted)' }}>{lesson.category}</span>
-          {progress?.completed && (
-            <span
-              className="text-xs font-semibold px-2 py-0.5 rounded-full"
-              style={{ background: 'var(--sage)', color: 'var(--sage-ink)' }}
-            >
-              Завършен ✓
-            </span>
-          )}
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge color={levelBadge[lesson.level] ?? 'sage'}>{lesson.level}</Badge>
+            <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--muted)' }}>{lesson.category}</span>
+            {progress?.completed && (
+              <span
+                className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                style={{ background: 'var(--sage)', color: 'var(--sage-ink)' }}
+              >
+                Завършен ✓
+              </span>
+            )}
+          </div>
+          <BookmarkButton
+            lessonId={lesson.id}
+            initialBookmarked={isBookmarked}
+            userId={user?.id}
+          />
         </div>
         <h1 className="text-3xl font-bold tracking-tight" style={{ color: 'var(--ink)' }}>{lesson.title}</h1>
         {progress?.score !== undefined && (
