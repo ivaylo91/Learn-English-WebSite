@@ -132,6 +132,16 @@ B2: Formal Connectors (furthermore, consequently, whereas...), Idioms (bite the 
 C1: Legal/Political (legislation, referendum, jurisdiction, precedent...), Academic Verbs (assert, refute, infer, stipulate...), Nuanced Emotions (apprehensive, elated, remorseful...), Formal Register (paramount, mitigate, discrepancy...)
 **Total after all four vocab seeds: ~566 words.**
 
+### Vocabulary words — v4 A1–B1 gap-fill (113 words)
+```
+supabase/seed_vocabulary_v4.sql
+```
+Run after `seed_vocabulary_v3.sql`. Fills practical A1–B1 gaps:
+A1: Days of the week (7), Months (12), Seasons (4), Professions (12: nurse, pilot, chef, dentist...), Ordinals (7: first, second, last, next...)
+A2: Action Verbs II (15: wash, cook, fix, break, choose...), Communication (10: call, text, email, send, reply...), Descriptive Adjectives II (12: clean/dirty, loud/quiet, safe/dangerous, comfortable...)
+B1: Cooking (12: boil, fry, bake, chop, stir, pour...), Opinions (10: agree, disagree, suppose, wonder, deny...), Tourism (12: tourist, sightseeing, souvenir, landmark, itinerary...)
+**Total after all five vocab seeds: ~627 words.**
+
 ### Grammar lesson content — A1 to B2 (14 lessons)
 ```
 supabase/seed_grammar_content.sql
