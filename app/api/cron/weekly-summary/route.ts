@@ -72,7 +72,8 @@ export async function GET(req: NextRequest) {
 
   const weekAchievementsMap = new Map<string, string[]>();
   for (const row of achievementsRes.data ?? []) {
-    const title = (row.achievements as { title_bg: string } | null)?.title_bg;
+    const ach = row.achievements as unknown as { title_bg: string } | null;
+    const title = ach?.title_bg;
     if (!title) continue;
     const arr = weekAchievementsMap.get(row.user_id) ?? [];
     arr.push(title);
