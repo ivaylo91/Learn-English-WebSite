@@ -90,12 +90,12 @@ export default function PlacementTest() {
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
-            onClick={() => startTransition(() => { router.push('/napredak'); })}
+            onClick={() => startTransition(() => { router.push('/onboarding'); })}
             disabled={isPending}
             className="inline-flex items-center justify-center gap-2 px-7 py-3 rounded-xl font-bold text-sm text-white transition-all duration-200 hover:-translate-y-0.5 active:scale-[.98] disabled:opacity-60 cursor-pointer"
             style={{ background: 'var(--coral)', boxShadow: '0 8px 16px -8px rgba(232,99,58,.5)' }}
           >
-            Виж напредъка ми
+            Виж плана ми
             <ChevronRight className="w-4 h-4" />
           </button>
           <button

@@ -14,14 +14,16 @@ const STEPS = [
     sub: 'Открий своето ниво',
     bg: 'var(--peach)',
     color: 'var(--coral-ink)',
+    primary: true,
   },
   {
     href: '/rechnik',
     icon: BookMarked,
     label: 'Речник',
-    sub: 'Научи първите 10 думи',
+    sub: 'Научи първите думи',
     bg: 'var(--coral-soft)',
     color: 'var(--coral-ink)',
+    primary: false,
   },
   {
     href: '/gramatika',
@@ -30,6 +32,7 @@ const STEPS = [
     sub: 'Прочети първия урок',
     bg: 'var(--lavender)',
     color: 'var(--lav-ink)',
+    primary: false,
   },
   {
     href: '/slusham',
@@ -38,6 +41,7 @@ const STEPS = [
     sub: 'Чуй A1 клип',
     bg: 'var(--sky)',
     color: 'var(--sky-ink)',
+    primary: false,
   },
 ] as const;
 
@@ -88,13 +92,17 @@ export default function OnboardingBanner({ name }: { name: string }) {
 
             {/* Quick-start chips */}
             <div className="flex flex-wrap gap-3">
-              {STEPS.map(({ href, icon: Icon, label, sub, bg, color }) => (
+              {STEPS.map(({ href, icon: Icon, label, sub, bg, color, primary }) => (
                 <Link
                   key={href}
                   href={href}
                   onClick={dismiss}
                   className="group flex items-center gap-3 rounded-2xl px-4 py-3 transition-all duration-200 hover:-translate-y-0.5 active:scale-[.98]"
-                  style={{
+                  style={primary ? {
+                    background: 'var(--coral)',
+                    border: '1px solid var(--coral)',
+                    boxShadow: '0 4px 12px -4px rgba(232,99,58,.5)',
+                  } : {
                     background: 'rgba(255,255,255,0.75)',
                     border: '1px solid rgba(255,255,255,0.9)',
                     boxShadow: '0 2px 8px -2px rgba(232,99,58,.1)',
@@ -102,17 +110,17 @@ export default function OnboardingBanner({ name }: { name: string }) {
                 >
                   <div
                     className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center"
-                    style={{ background: bg, color }}
+                    style={{ background: primary ? 'rgba(255,255,255,0.2)' : bg, color: primary ? '#fff' : color }}
                   >
                     <Icon className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold leading-tight" style={{ color: 'var(--ink)' }}>{label}</p>
-                    <p className="text-[11px] leading-tight" style={{ color: 'var(--muted)' }}>{sub}</p>
+                    <p className="text-xs font-bold leading-tight" style={{ color: primary ? '#fff' : 'var(--ink)' }}>{label}</p>
+                    <p className="text-[11px] leading-tight" style={{ color: primary ? 'rgba(255,255,255,0.8)' : 'var(--muted)' }}>{sub}</p>
                   </div>
                   <ArrowRight
                     className="w-3.5 h-3.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{ color: 'var(--coral)' }}
+                    style={{ color: primary ? '#fff' : 'var(--coral)' }}
                   />
                 </Link>
               ))}
