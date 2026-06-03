@@ -75,6 +75,20 @@ export default async function ListeningClipPage({ params }: Props) {
   const nextClip = nextClipRes.data;
   const duration = formatDuration(clip.duration_seconds);
 
+  const BASE   = 'https://uchi-angliyski.vercel.app';
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type':    'LearningResource',
+    name:        clip.title,
+    description: `Аудио клип на ниво ${clip.level} по темата „${clip.topic}". Транскрипт и въпроси за разбиране.`,
+    url:         `${BASE}/slusham/${id}`,
+    educationalLevel:     clip.level,
+    learningResourceType: 'AudioObject',
+    teaches:     'English listening comprehension',
+    inLanguage:  'bg',
+    provider:    { '@type': 'Organization', name: 'Учи Английски', url: BASE },
+  };
+
   async function saveScore(score: number) {
     'use server';
     if (!user) return;
@@ -103,6 +117,7 @@ export default async function ListeningClipPage({ params }: Props) {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Link
         href="/slusham"
         className="inline-flex items-center gap-1.5 text-sm mb-6 transition-colors hover:underline"

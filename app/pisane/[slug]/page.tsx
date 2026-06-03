@@ -62,8 +62,23 @@ export default async function WritingExercisePage({ params }: Props) {
   const prevEx    = siblings[curIdx - 1] ?? null;
   const nextEx    = siblings[curIdx + 1] ?? null;
 
+  const BASE   = 'https://uchi-angliyski.vercel.app';
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type':    'LearningResource',
+    name:        exercise.title,
+    description: `Упражнение по английско писане: ${exercise.title}. Ниво ${exercise.level}.`,
+    url:         `${BASE}/pisane/${slug}`,
+    educationalLevel:     exercise.level,
+    learningResourceType: 'Exercise',
+    teaches:     'English writing',
+    inLanguage:  'bg',
+    provider:    { '@type': 'Organization', name: 'Учи Английски', url: BASE },
+  };
+
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm mb-6" style={{ color: 'var(--muted)' }}>
         <Link href="/pisane" className="transition-colors hover:underline" style={{ color: 'var(--butter-ink)' }}>
