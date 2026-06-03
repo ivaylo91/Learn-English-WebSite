@@ -1,9 +1,8 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { createClient } from '@/lib/supabase/server';
 import { getCachedReadingText, getCachedReadingSlugs } from '@/lib/db/static-cache';
+import VocabMarkdown from '@/components/reading/VocabMarkdown';
 import Quiz from '@/components/grammar/Quiz';
 import Badge from '@/components/ui/Badge';
 import { ChevronLeft, Clock, BookOpen } from 'lucide-react';
@@ -176,11 +175,9 @@ export default async function ReadingTextPage({ params }: Props) {
         </details>
       )}
 
-      {/* Reading text */}
-      <div className="prose prose-sm sm:prose-base max-w-none prose-warm mb-10">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-          {text.body_md}
-        </ReactMarkdown>
+      {/* Reading text — bold words with vocabulary entries show inline translation tooltips */}
+      <div className="mb-10">
+        <VocabMarkdown bodyMd={text.body_md} vocabulary={vocab} />
       </div>
 
       {/* Quiz */}
