@@ -7,7 +7,9 @@ import Badge from "@/components/ui/Badge";
 import OnboardingBanner from "@/components/OnboardingBanner";
 import StreakProtectionBanner from "@/components/StreakProtectionBanner";
 import PersonalHero from "@/components/home/PersonalHero";
+import DailyChallengeCard from "@/components/home/DailyChallengeCard";
 import { createClient } from "@/lib/supabase/server";
+import { getDailyChallenge } from "@/lib/actions/daily-challenge";
 
 /* ─── Flashcard hero visual ─── */
 interface WordOfDay {
@@ -263,11 +265,11 @@ export default async function HomePage() {
   const dayNumber = Math.floor(Date.now() / 86_400_000);
   const offset    = wordCount > 0 ? dayNumber % wordCount : 0;
 
-  // Fetch profile, word of the day, and (for logged-in users) due count + today's XP
+  // Fetch profile, word of the day, (for logged-in users) due count + today's XP + daily challenge
   const todayUTC = new Date().toISOString().slice(0, 10);
-  const [profileRes, wordRes, dueRes, todayXpRes] = await Promise.all([
+  const [profileRes, wordRes, dueRes, todayXpRes, dailyChallenge] = await Promise.all([
     user
-      ? supabase.from('profiles').select('name, xp, streak, level, last_active_at').eq('id', user.id).single()
+      ? supabase.from('profiles').select('name, xp, streak, level, last_active_at, streak_freeze_count').eq('id', user.id).single()
       : Promise.resolve({ data: null }),
     wordCount > 0
       ? supabase
@@ -294,13 +296,15 @@ export default async function HomePage() {
           .eq('user_id', user.id)
           .gte('created_at', `${todayUTC}T00:00:00.000Z`)
       : Promise.resolve({ data: [] }),
+    // Daily challenge (only for logged-in users)
+    user ? getDailyChallenge() : Promise.resolve(null),
   ]);
 
   const wordOfDay = wordRes.data as WordOfDay | null;
   const dueCount  = dueRes.count ?? 0;
   const todayXp   = (todayXpRes.data ?? []).reduce((s, r) => s + ((r as { xp_gained: number }).xp_gained ?? 0), 0);
 
-  type ProfileRow = { name: string | null; xp: number; streak: number; level: string; last_active_at: string | null };
+  type ProfileRow = { name: string | null; xp: number; streak: number; level: string; last_active_at: string | null; streak_freeze_count?: number };
   const profile = profileRes.data as ProfileRow | null;
 
   let onboardingName: string | null = null;
@@ -326,7 +330,7 @@ export default async function HomePage() {
     <div className="overflow-hidden">
       {onboardingName && <OnboardingBanner name={onboardingName} />}
       {streakAtRisk && profile && (
-        <StreakProtectionBanner streak={profile.streak} />
+        <StreakProtectionBanner streak={profile.streak} freezeCount={profile.streak_freeze_count ?? 0} />
       )}
 
       {/* ── Returning user: personal dashboard ── */}
@@ -339,6 +343,13 @@ export default async function HomePage() {
           dueCount={dueCount}
           todayXp={todayXp}
         />
+      )}
+
+      {/* ── Daily challenge (logged-in users with XP) ── */}
+      {showPersonalHero && dailyChallenge && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4">
+          <DailyChallengeCard challenge={dailyChallenge} />
+        </div>
       )}
 
       {/* ── New visitors: split-screen marketing hero ── */}

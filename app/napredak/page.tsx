@@ -87,7 +87,7 @@ export default async function NapredakPage() {
     xpActivityRes,
     weakAreasRes,
   ] = await Promise.all([
-    supabase.from('profiles').select('name, xp, streak, level, last_active_at, daily_goal').eq('id', user.id).single(),
+    supabase.from('profiles').select('name, xp, streak, level, last_active_at, daily_goal, streak_freeze_count').eq('id', user.id).single(),
     supabase.from('vocabulary_words').select('id', { count: 'exact', head: true }),
     supabase.from('user_word_progress').select('status').eq('user_id', user.id),
     supabase.from('grammar_lessons').select('id', { count: 'exact', head: true }),
@@ -158,7 +158,7 @@ export default async function NapredakPage() {
   // Check & unlock any newly earned achievements (silent — no toast on this page)
   await checkAndUnlockAchievements(user.id);
 
-  const profile        = profileRes.data as { name?: string; xp: number; streak: number; level: string; last_active_at: string | null; daily_goal?: string } | null;
+  const profile        = profileRes.data as { name?: string; xp: number; streak: number; level: string; last_active_at: string | null; daily_goal?: string; streak_freeze_count?: number } | null;
   const todayUTC       = new Date().toISOString().slice(0, 10);
   const streakAtRisk   = (profile?.streak ?? 0) > 0 && (profile?.last_active_at?.slice(0, 10) ?? '') < todayUTC;
   const vocabTotal     = vocabTotalRes.count ?? 0;
@@ -295,7 +295,7 @@ export default async function NapredakPage() {
 
   return (
     <>
-    {streakAtRisk && profile && <StreakProtectionBanner streak={profile.streak} />}
+    {streakAtRisk && profile && <StreakProtectionBanner streak={profile.streak} freezeCount={profile.streak_freeze_count ?? 0} />}
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
 
       <div className="flex items-start justify-between gap-4 mb-10">
