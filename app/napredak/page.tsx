@@ -7,7 +7,7 @@ import StreakProtectionBanner from '@/components/StreakProtectionBanner';
 import AchievementShelf from '@/components/achievements/AchievementShelf';
 import DailyGoalCard from '@/components/goals/DailyGoalCard';
 import ShareCard from '@/components/napredak/ShareCard';
-import WeakAreasCard, { type WeakLesson } from '@/components/napredak/WeakAreasCard';
+import WeakAreasCard, { type WeakItem } from '@/components/napredak/WeakAreasCard';
 import XpChart, { type DayXp } from '@/components/napredak/XpChart';
 import { checkAndUnlockAchievements } from '@/lib/actions/achievements';
 import { checkAndLogDailyGoal } from '@/lib/actions/goals';
@@ -93,11 +93,11 @@ export default async function NapredakPage() {
     supabase.from('grammar_lessons').select('id', { count: 'exact', head: true }),
     supabase.from('user_lesson_progress').select('completed').eq('user_id', user.id),
     supabase.from('listening_clips').select('id', { count: 'exact', head: true }),
-    supabase.from('user_content_progress').select('completed').eq('user_id', user.id).eq('content_type', 'listening'),
+    supabase.from('user_content_progress').select('content_id, score, completed').eq('user_id', user.id).eq('content_type', 'listening'),
     supabase.from('reading_texts').select('id', { count: 'exact', head: true }),
-    supabase.from('user_content_progress').select('completed').eq('user_id', user.id).eq('content_type', 'reading'),
+    supabase.from('user_content_progress').select('content_id, score, completed').eq('user_id', user.id).eq('content_type', 'reading'),
     supabase.from('writing_exercises').select('id', { count: 'exact', head: true }),
-    supabase.from('user_writing_progress').select('completed').eq('user_id', user.id),
+    supabase.from('user_writing_progress').select('exercise_id, score, completed').eq('user_id', user.id),
     supabase
       .from('user_activity')
       .select('module, action, xp_gained, created_at')
@@ -189,17 +189,69 @@ export default async function NapredakPage() {
   });
   const chartTotal = Object.values(xpByDay).reduce((s, v) => s + v, 0);
 
-  // Weak areas — lessons with score < 60%
-  const weakLessons: WeakLesson[] = (weakAreasRes.data ?? [])
-    .filter((r): r is typeof r & { grammar_lessons: NonNullable<typeof r.grammar_lessons> } =>
-      r.grammar_lessons !== null
-    )
+  // ── Weak areas — all modules with score < 60% ────────────────────────────────
+
+  // Grammar weak items (already fetched with join)
+  const grammarWeakItems: WeakItem[] = (weakAreasRes.data ?? [])
+    .filter(r => r.grammar_lessons !== null)
     .map(r => ({
-      lesson_id: r.lesson_id,
-      score:     r.score as number,
-      attempts:  (r.attempts as number | null) ?? 1,
-      lesson:    r.grammar_lessons as WeakLesson['lesson'],
+      id:       r.lesson_id,
+      title:    (r.grammar_lessons as { title: string }).title,
+      level:    (r.grammar_lessons as { level: string }).level,
+      score:    r.score as number,
+      href:     `/gramatika/${(r.grammar_lessons as { slug: string }).slug}`,
+      module:   'grammar' as const,
+      attempts: (r.attempts as number | null) ?? 1,
     }));
+
+  // Listening/reading/writing: find IDs with score < 60 from existing data
+  type ProgressWithScore = { content_id: string; score: number | null; completed: boolean };
+  type WritingProgressWithScore = { exercise_id: string; score: number | null; completed: boolean };
+
+  const listeningRows  = (listeningProgressRes.data ?? []) as ProgressWithScore[];
+  const readingRows    = (readingProgressRes.data   ?? []) as ProgressWithScore[];
+  const writingRows    = (writingProgressRes.data   ?? []) as WritingProgressWithScore[];
+
+  const listeningWeakIds = listeningRows.filter(r => (r.score ?? 0) > 0 && (r.score ?? 0) < 60).map(r => r.content_id).slice(0, 5);
+  const readingWeakIds   = readingRows.filter(r   => (r.score ?? 0) > 0 && (r.score ?? 0) < 60).map(r => r.content_id).slice(0, 5);
+  const writingWeakIds   = writingRows.filter(r   => (r.score ?? 0) > 0 && (r.score ?? 0) < 60).map(r => r.exercise_id).slice(0, 5);
+
+  // Secondary lookup for titles (only runs when there are weak items)
+  const [weakClipsRes, weakTextsRes, weakExRes] = await Promise.all([
+    listeningWeakIds.length > 0
+      ? supabase.from('listening_clips').select('id, title, level').in('id', listeningWeakIds)
+      : Promise.resolve({ data: [] as { id: string; title: string; level: string }[] }),
+    readingWeakIds.length > 0
+      ? supabase.from('reading_texts').select('id, slug, title, level').in('id', readingWeakIds)
+      : Promise.resolve({ data: [] as { id: string; slug: string; title: string; level: string }[] }),
+    writingWeakIds.length > 0
+      ? supabase.from('writing_exercises').select('id, slug, title, level').in('id', writingWeakIds)
+      : Promise.resolve({ data: [] as { id: string; slug: string; title: string; level: string }[] }),
+  ]);
+
+  const listeningWeakItems: WeakItem[] = (weakClipsRes.data ?? []).map(clip => ({
+    id: clip.id, title: clip.title, level: clip.level,
+    score: listeningRows.find(r => r.content_id === clip.id)?.score ?? 0,
+    href:   `/slusham/${clip.id}`,
+    module: 'listening' as const,
+  }));
+  const readingWeakItems: WeakItem[] = (weakTextsRes.data ?? []).map(text => ({
+    id: text.id, title: text.title, level: text.level,
+    score: readingRows.find(r => r.content_id === text.id)?.score ?? 0,
+    href:   `/chetene/${(text as { slug: string }).slug}`,
+    module: 'reading' as const,
+  }));
+  const writingWeakItems: WeakItem[] = (weakExRes.data ?? []).map(ex => ({
+    id: ex.id, title: ex.title, level: ex.level,
+    score: writingRows.find(r => r.exercise_id === ex.id)?.score ?? 0,
+    href:   `/pisane/${(ex as { slug: string }).slug}`,
+    module: 'writing' as const,
+  }));
+
+  // Merge and sort by score (worst first), max 8 items
+  const allWeakItems: WeakItem[] = [
+    ...grammarWeakItems, ...listeningWeakItems, ...readingWeakItems, ...writingWeakItems,
+  ].sort((a, b) => a.score - b.score).slice(0, 8);
 
   const dailyGoal      = ((profile?.daily_goal ?? 'standard') as DailyGoal);
   const todayProgress  = computeTodayProgress(
@@ -285,8 +337,8 @@ export default async function NapredakPage() {
         ))}
       </div>
 
-      {/* Weak areas — lessons needing practice */}
-      <WeakAreasCard lessons={weakLessons} />
+      {/* Weak areas — all modules needing practice */}
+      <WeakAreasCard items={allWeakItems} />
 
       {/* Share card */}
       <ShareCard
