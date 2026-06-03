@@ -61,7 +61,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Skip static files, images, audio, and auth callbacks
-    "/((?!_next/static|_next/image|favicon.ico|auth/callback|audio/|icons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp3|mp4|wav|ogg|ico)$).*)",
+    // Skip static files, images, audio routes, and auth callbacks
+    "/((?!_next/static|_next/image|favicon.ico|auth/callback|audio/|api/audio/|icons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp3|mp4|wav|ogg|ico)$).*)",
   ],
 };

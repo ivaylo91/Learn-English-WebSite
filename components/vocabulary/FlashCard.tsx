@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { VocabularyWord } from '@/lib/types/database';
 import Badge from '@/components/ui/Badge';
+import PronounceButton from './PronounceButton';
 import { RotateCcw } from 'lucide-react';
 
 export interface SrsState {
@@ -135,12 +136,15 @@ export default function FlashCard({ word, cardNumber, total, loading, srsState, 
                 {word.category}
               </span>
             </div>
-            <h2
-              className="text-5xl font-bold text-center tracking-tight mb-3"
-              style={{ fontFamily: 'var(--font-display)', color: 'var(--ink)' }}
-            >
-              {word.word_en}
-            </h2>
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <h2
+                className="text-5xl font-bold tracking-tight"
+                style={{ fontFamily: 'var(--font-display)', color: 'var(--ink)' }}
+              >
+                {word.word_en}
+              </h2>
+              <PronounceButton word={word.word_en} size="md" />
+            </div>
             {word.phonetic && (
               <p className="font-mono text-base" style={{ color: 'var(--muted)' }}>{word.phonetic}</p>
             )}

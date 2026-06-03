@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import Badge from '@/components/ui/Badge';
 import WordActions from '@/components/vocabulary/WordActions';
 import WordCard from '@/components/vocabulary/WordCard';
+import PronounceButton from '@/components/vocabulary/PronounceButton';
 import { ChevronLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 
@@ -109,12 +110,15 @@ export default async function WordDetailPage({ params }: Props) {
               <Badge color={levelColor[word.level] ?? 'gray'}>{word.level}</Badge>
               <span className="text-xs uppercase tracking-wide" style={{ color: "var(--muted)" }}>{word.category}</span>
             </div>
-            <h1
-              className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-2 break-words"
-              style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}
-            >
-              {word.word_en}
-            </h1>
+            <div className="flex items-center gap-3 mb-2 flex-wrap">
+              <h1
+                className="text-4xl sm:text-5xl font-extrabold tracking-tight break-words"
+                style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}
+              >
+                {word.word_en}
+              </h1>
+              <PronounceButton word={word.word_en} size="md" />
+            </div>
             {word.phonetic && (
               <p className="text-base" style={{ color: "var(--muted)", fontFamily: "var(--font-code)" }}>{word.phonetic}</p>
             )}
