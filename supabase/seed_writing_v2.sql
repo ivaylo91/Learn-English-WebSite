@@ -110,7 +110,7 @@ INSERT INTO public.writing_exercises (slug, title, level, topic, prompts) VALUES
    {"prompt": "Fill in: The police will ___ the complaint. (investigate = look ___)", "answers": ["look into"], "hint": "look into = разследвам / проучвам"},
    {"prompt": "Fill in: They ___ a new company together. (established = set ___)", "answers": ["set up"], "hint": "set up = основавам / създавам"},
    {"prompt": "Fill in: She ___ her grandmother''s love of reading. (inherited = took ___)", "answers": ["took after"], "hint": "take after = приличам на (родственик)"},
-   {"prompt": "Fill in: The project ___ longer than expected. (required = took ___)", "answers": ["dragged on", "took longer"], "hint": "drag on = проточва се — or just: 'The project took longer'"},
+   {"prompt": "Fill in: The project ___ longer than expected. (required = took ___)", "answers": ["dragged on", "took longer"], "hint": "drag on = проточва се — or: The project took longer than expected."},
    {"prompt": "Fill in: His argument ___ perfectly. (was convincing = held ___)", "answers": ["held up"], "hint": "hold up = издържа на проверка / оказа се верен"}
  ]'::jsonb),
 
