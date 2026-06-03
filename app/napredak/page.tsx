@@ -9,11 +9,13 @@ import DailyGoalCard from '@/components/goals/DailyGoalCard';
 import ShareCard from '@/components/napredak/ShareCard';
 import CertificateSection from '@/components/napredak/CertificateSection';
 import BookmarkedLessons from '@/components/napredak/BookmarkedLessons';
+import BookmarkedTexts from '@/components/napredak/BookmarkedTexts';
 import WeakAreasCard, { type WeakItem } from '@/components/napredak/WeakAreasCard';
 import XpChart, { type DayXp } from '@/components/napredak/XpChart';
 import { checkAndUnlockAchievements } from '@/lib/actions/achievements';
 import { checkAndLogDailyGoal } from '@/lib/actions/goals';
 import { getGrammarBookmarks } from '@/lib/actions/grammar-bookmarks';
+import { getReadingBookmarks } from '@/lib/actions/reading-bookmarks';
 import { computeTodayProgress, type DailyGoal } from '@/lib/goals-utils';
 import Link from 'next/link';
 import type { Metadata } from 'next';
@@ -161,7 +163,10 @@ export default async function NapredakPage() {
   // Check & unlock any newly earned achievements (silent — no toast on this page)
   await checkAndUnlockAchievements(user.id);
 
-  const grammarBookmarks = await getGrammarBookmarks();
+  const [grammarBookmarks, readingBookmarks] = await Promise.all([
+    getGrammarBookmarks(),
+    getReadingBookmarks(),
+  ]);
 
   const profile        = profileRes.data as { name?: string; xp: number; streak: number; level: string; last_active_at: string | null; daily_goal?: string; streak_freeze_count?: number } | null;
   const todayUTC       = new Date().toISOString().slice(0, 10);
@@ -351,6 +356,9 @@ export default async function NapredakPage() {
 
       {/* Bookmarked grammar lessons */}
       <BookmarkedLessons lessons={grammarBookmarks} />
+
+      {/* Bookmarked reading texts */}
+      <BookmarkedTexts texts={readingBookmarks} />
 
       {/* Certificates */}
       <CertificateSection

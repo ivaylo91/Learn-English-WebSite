@@ -6,6 +6,7 @@ import VocabMarkdown from '@/components/reading/VocabMarkdown';
 import Quiz from '@/components/grammar/Quiz';
 import Badge from '@/components/ui/Badge';
 import { ChevronLeft, Clock, BookOpen } from 'lucide-react';
+import BookmarkButton from '@/components/reading/BookmarkButton';
 import type { Metadata } from 'next';
 
 type Props = { params: Promise<{ slug: string }> };
@@ -60,17 +61,28 @@ export default async function ReadingTextPage({ params }: Props) {
     provider: { '@type': 'Organization', name: 'Учи Английски', url: BASE },
   };
 
-  const progressRes = user
-    ? await supabase
-        .from('user_content_progress')
-        .select('score, completed')
-        .eq('user_id', user.id)
-        .eq('content_type', 'reading')
-        .eq('content_id', text.id)
-        .maybeSingle()
-    : { data: null };
+  const [progressRes, bookmarkRes] = await Promise.all([
+    user
+      ? supabase
+          .from('user_content_progress')
+          .select('score, completed')
+          .eq('user_id', user.id)
+          .eq('content_type', 'reading')
+          .eq('content_id', text.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    user
+      ? supabase
+          .from('reading_bookmarks')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('text_id', text.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
 
-  const progress = progressRes.data;
+  const progress     = progressRes.data;
+  const isBookmarked = !!bookmarkRes.data;
 
   async function saveScore(score: number) {
     'use server';
@@ -114,17 +126,24 @@ export default async function ReadingTextPage({ params }: Props) {
 
       {/* Header */}
       <div className="mb-8">
-        <div className="flex flex-wrap items-center gap-2 mb-3">
-          <Badge color={levelBadge[text.level] ?? 'sage'}>{text.level}</Badge>
-          <Badge color="butter">{text.topic}</Badge>
-          {progress?.completed && (
-            <span
-              className="text-xs font-semibold px-2 py-0.5 rounded-full"
-              style={{ background: 'var(--sage)', color: 'var(--sage-ink)' }}
-            >
-              Прочетен ✓
-            </span>
-          )}
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge color={levelBadge[text.level] ?? 'sage'}>{text.level}</Badge>
+            <Badge color="butter">{text.topic}</Badge>
+            {progress?.completed && (
+              <span
+                className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                style={{ background: 'var(--sage)', color: 'var(--sage-ink)' }}
+              >
+                Прочетен ✓
+              </span>
+            )}
+          </div>
+          <BookmarkButton
+            textId={text.id}
+            initialBookmarked={isBookmarked}
+            userId={user?.id}
+          />
         </div>
         <h1 className="text-3xl font-bold tracking-tight mb-3" style={{ color: 'var(--ink)' }}>
           {text.title}
