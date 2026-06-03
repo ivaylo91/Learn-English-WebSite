@@ -192,17 +192,21 @@ export default async function NapredakPage() {
   // ── Weak areas — all modules with score < 60% ────────────────────────────────
 
   // Grammar weak items (already fetched with join)
+  type GrammarJoin = { title: string; level: string; slug: string };
   const grammarWeakItems: WeakItem[] = (weakAreasRes.data ?? [])
     .filter(r => r.grammar_lessons !== null)
-    .map(r => ({
-      id:       r.lesson_id,
-      title:    (r.grammar_lessons as { title: string }).title,
-      level:    (r.grammar_lessons as { level: string }).level,
-      score:    r.score as number,
-      href:     `/gramatika/${(r.grammar_lessons as { slug: string }).slug}`,
-      module:   'grammar' as const,
-      attempts: (r.attempts as number | null) ?? 1,
-    }));
+    .map(r => {
+      const gl = r.grammar_lessons as unknown as GrammarJoin;
+      return {
+        id:       r.lesson_id,
+        title:    gl.title,
+        level:    gl.level,
+        score:    r.score as number,
+        href:     `/gramatika/${gl.slug}`,
+        module:   'grammar' as const,
+        attempts: (r.attempts as number | null) ?? 1,
+      };
+    });
 
   // Listening/reading/writing: find IDs with score < 60 from existing data
   type ProgressWithScore = { content_id: string; score: number | null; completed: boolean };
