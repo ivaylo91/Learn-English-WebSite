@@ -123,6 +123,15 @@ Finance/Money, Sport, Environment/Ecology, Technology Basics (B1)
 Media & News, Describing/Character (B2)
 **Total after all three vocab seeds: ~481 words.**
 
+### Vocabulary words — v3 B2–C1 (85 words)
+```
+supabase/seed_vocabulary_v3.sql
+```
+Run after `seed_vocabulary_v2.sql`. New categories:
+B2: Formal Connectors (furthermore, consequently, whereas...), Idioms (bite the bullet, on the fence...), Business Collocations (streamline, stakeholder, bottom line...), Evaluative Language (detrimental, plausible, indispensable...)
+C1: Legal/Political (legislation, referendum, jurisdiction, precedent...), Academic Verbs (assert, refute, infer, stipulate...), Nuanced Emotions (apprehensive, elated, remorseful...), Formal Register (paramount, mitigate, discrepancy...)
+**Total after all four vocab seeds: ~566 words.**
+
 ### Grammar lesson content — A1 to B2 (14 lessons)
 ```
 supabase/seed_grammar_content.sql
