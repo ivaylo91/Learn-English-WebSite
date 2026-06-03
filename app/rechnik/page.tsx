@@ -1,4 +1,4 @@
-import { BookMarked, Zap, CheckCircle2, Plus } from 'lucide-react';
+import { BookMarked, Zap, CheckCircle2, Plus, TrendingUp } from 'lucide-react';
 import ModuleHero from '@/components/modules/ModuleHero';
 import WordListClient from '@/components/vocabulary/WordListClient';
 import { createClient } from '@/lib/supabase/server';
@@ -133,6 +133,20 @@ export default async function RechnikPage() {
           {cta.btnLabel}
         </Link>
       </div>
+
+      {/* Stats link */}
+      {user && (
+        <div className="flex justify-end mb-4">
+          <Link
+            href="/rechnik/stats"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors hover:bg-[var(--bg-2)]"
+            style={{ color: 'var(--muted)' }}
+          >
+            <TrendingUp className="w-3.5 h-3.5" />
+            Виж статистика
+          </Link>
+        </div>
+      )}
 
       <section>
         <WordListClient words={allWords} categories={categories} progressMap={progressMap} />
