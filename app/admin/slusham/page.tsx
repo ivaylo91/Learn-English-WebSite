@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
-import { Plus } from 'lucide-react';
+import { Plus, AlertTriangle, VolumeX } from 'lucide-react';
 import type { ListeningClip } from '@/lib/types/database';
 import { deleteClip } from '@/lib/actions/admin';
 import DeleteButton from '@/components/admin/DeleteButton';
@@ -72,7 +72,23 @@ export default async function AdminListeningList() {
               const lc = levelColors[c.level] ?? levelColors.A1;
               return (
                 <tr key={c.id} style={{ borderBottom: '1px solid var(--line)' }}>
-                  <td className="px-4 py-3 font-medium" style={{ color: 'var(--ink)' }}>{c.title}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium" style={{ color: 'var(--ink)' }}>{c.title}</span>
+                      {!c.audio_url && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0"
+                          style={{ background: 'var(--rose)', color: 'var(--rose-ink)', border: '1px solid #ecb9b9' }}>
+                          <VolumeX className="w-2.5 h-2.5" />Без аудио
+                        </span>
+                      )}
+                      {(!Array.isArray(c.questions) || c.questions.length === 0) && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0"
+                          style={{ background: 'var(--butter)', color: 'var(--butter-ink)', border: '1px solid #e8d8a8' }}>
+                          <AlertTriangle className="w-2.5 h-2.5" />Без въпроси
+                        </span>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-4 py-3 text-xs" style={{ color: 'var(--muted)' }}>{c.topic}</td>
                   <td className="px-4 py-3">
                     <span

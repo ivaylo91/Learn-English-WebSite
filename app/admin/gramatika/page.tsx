@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
-import { Plus } from 'lucide-react';
+import { Plus, AlertTriangle, FileX } from 'lucide-react';
 import type { GrammarLesson } from '@/lib/types/database';
 import { deleteLesson } from '@/lib/actions/admin';
 import DeleteButton from '@/components/admin/DeleteButton';
@@ -67,7 +67,23 @@ export default async function AdminGrammarList() {
               return (
                 <tr key={l.id} style={{ borderBottom: '1px solid var(--line)' }}>
                   <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--muted)' }}>{l.order_index}</td>
-                  <td className="px-4 py-3 font-medium" style={{ color: 'var(--ink)' }}>{l.title}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium" style={{ color: 'var(--ink)' }}>{l.title}</span>
+                      {!l.content_md && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0"
+                          style={{ background: 'var(--rose)', color: 'var(--rose-ink)', border: '1px solid #ecb9b9' }}>
+                          <FileX className="w-2.5 h-2.5" />Без съдържание
+                        </span>
+                      )}
+                      {(!Array.isArray(l.questions) || l.questions.length === 0) && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0"
+                          style={{ background: 'var(--butter)', color: 'var(--butter-ink)', border: '1px solid #e8d8a8' }}>
+                          <AlertTriangle className="w-2.5 h-2.5" />Без въпроси
+                        </span>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--muted)' }}>{l.slug}</td>
                   <td className="px-4 py-3">
                     <span

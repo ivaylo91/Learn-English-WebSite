@@ -2,6 +2,7 @@ import Link from 'next/link';
 import {
   BookMarked, PenLine, Headphones, BookOpen, Pencil,
   Users, Zap, Flame, TrendingUp, ArrowRight, Activity,
+  VolumeX, FileX, AlertTriangle, CheckCircle2,
 } from 'lucide-react';
 import { createServiceClient } from '@/lib/supabase/service';
 
@@ -63,6 +64,9 @@ export default async function AdminDashboard() {
     totalXpRes,
     avgStreakRes,
     activeTodayRes,
+    clipsNoAudioRes,
+    lessonsNoContentRes,
+    contentNoQuestionsRes,
   ] = await Promise.all([
     db.from('profiles').select('id', { count: 'exact', head: true }),
     // Active in last 7 days: distinct users with activity
@@ -82,7 +86,24 @@ export default async function AdminDashboard() {
       .select('user_id')
       .gte('created_at', ago(1))
       .limit(10000),
+    // Quality: clips without audio
+    db.from('listening_clips')
+      .select('id', { count: 'exact', head: true })
+      .or('audio_url.is.null,audio_url.eq.'),
+    // Quality: grammar lessons without content
+    db.from('grammar_lessons')
+      .select('id', { count: 'exact', head: true })
+      .or('content_md.is.null,content_md.eq.'),
+    // Quality: any content type without questions
+    db.from('grammar_lessons')
+      .select('id', { count: 'exact', head: true })
+      .eq('questions', '[]'),
   ]);
+
+  const clipsNoAudio      = clipsNoAudioRes.count    ?? 0;
+  const lessonsNoContent  = lessonsNoContentRes.count ?? 0;
+  const contentNoQuestions = contentNoQuestionsRes.count ?? 0;
+  const totalQualityIssues = clipsNoAudio + lessonsNoContent + contentNoQuestions;
 
   const totalUsers   = totalUsersRes.count ?? 0;
   const newThisWeek  = newWeekRes.count     ?? 0;
@@ -321,6 +342,79 @@ export default async function AdminDashboard() {
             )}
           </div>
         </div>
+
+      {/* ── Content quality ──────────────────────────────────────────────── */}
+      <div className="mt-6">
+        <div className="flex items-center gap-2 mb-3">
+          {totalQualityIssues > 0
+            ? <AlertTriangle className="w-4 h-4" style={{ color: 'var(--butter-ink)' }} />
+            : <CheckCircle2  className="w-4 h-4" style={{ color: 'var(--sage-ink)' }} />
+          }
+          <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>
+            Качество на съдържанието
+          </h2>
+        </div>
+
+        <div
+          className="rounded-2xl overflow-hidden"
+          style={{ border: '1px solid var(--line)', background: 'var(--surface)' }}
+        >
+          {[
+            {
+              label:  'Клипове без аудио',
+              count:  clipsNoAudio,
+              total:  vocabC.count ?? 0, // reuse content count; show raw count
+              href:   '/admin/slusham',
+              icon:   VolumeX,
+            },
+            {
+              label:  'Уроци без съдържание',
+              count:  lessonsNoContent,
+              total:  grammarC.count ?? 0,
+              href:   '/admin/gramatika',
+              icon:   FileX,
+            },
+            {
+              label:  'Граматични уроци без въпроси',
+              count:  contentNoQuestions,
+              total:  grammarC.count ?? 0,
+              href:   '/admin/gramatika',
+              icon:   AlertTriangle,
+            },
+          ].map(({ label, count, href, icon: Icon }, i, arr) => (
+            <div
+              key={label}
+              className="flex items-center justify-between px-5 py-3.5"
+              style={{ borderBottom: i < arr.length - 1 ? '1px solid var(--line)' : undefined }}
+            >
+              <div className="flex items-center gap-3">
+                <Icon
+                  className="w-4 h-4 shrink-0"
+                  style={{ color: count > 0 ? 'var(--butter-ink)' : 'var(--sage-ink)' }}
+                />
+                <span className="text-sm" style={{ color: 'var(--ink-2)' }}>{label}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  className="text-sm font-bold tabular-nums"
+                  style={{ color: count > 0 ? 'var(--butter-ink)' : 'var(--sage-ink)' }}
+                >
+                  {count > 0 ? count : '✓'}
+                </span>
+                {count > 0 && (
+                  <Link
+                    href={href}
+                    className="text-xs font-semibold hover:underline"
+                    style={{ color: 'var(--coral)' }}
+                  >
+                    Виж →
+                  </Link>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       </div>
     </div>
