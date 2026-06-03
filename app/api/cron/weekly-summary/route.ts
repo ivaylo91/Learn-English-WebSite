@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   const { data: profiles, error: profilesErr } = await db
     .from('profiles')
     .select('id, name, xp, streak, level')
-    .eq('email_reminders', true)
+    .eq('weekly_summary_emails', true)
     .gte('last_active_at', thirtyDaysAgo); // skip fully churned users
 
   if (profilesErr) {

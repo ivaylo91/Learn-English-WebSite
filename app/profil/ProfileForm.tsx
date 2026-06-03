@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Save, CheckCircle2, AlertCircle, Bell, BellOff } from 'lucide-react';
+import { Save, CheckCircle2, AlertCircle, Bell, BellOff, CalendarDays } from 'lucide-react';
 import { GOAL_TARGETS, type DailyGoal } from '@/lib/goals-utils';
 import { createClient } from '@/lib/supabase/client';
 import type { Level } from '@/lib/types/database';
@@ -23,15 +23,17 @@ interface Props {
   initName:           string;
   initLevel:          Level;
   initEmailReminders: boolean;
+  initWeeklySummary:  boolean;
   initDailyGoal:      DailyGoal;
 }
 
-export default function ProfileForm({ userId, initName, initLevel, initEmailReminders, initDailyGoal }: Props) {
+export default function ProfileForm({ userId, initName, initLevel, initEmailReminders, initWeeklySummary, initDailyGoal }: Props) {
   const router  = useRouter();
-  const [name,           setName]           = useState(initName);
-  const [level,          setLevel]          = useState<Level>(initLevel);
-  const [emailReminders, setEmailReminders] = useState(initEmailReminders);
-  const [dailyGoal,      setDailyGoal]      = useState<DailyGoal>(initDailyGoal);
+  const [name,             setName]             = useState(initName);
+  const [level,            setLevel]            = useState<Level>(initLevel);
+  const [emailReminders,   setEmailReminders]   = useState(initEmailReminders);
+  const [weeklySummary,    setWeeklySummary]    = useState(initWeeklySummary);
+  const [dailyGoal,        setDailyGoal]        = useState<DailyGoal>(initDailyGoal);
   const [loading,        setLoading]        = useState(false);
   const [status,         setStatus]         = useState<'idle' | 'success' | 'error'>('idle');
 
@@ -46,7 +48,7 @@ export default function ProfileForm({ userId, initName, initLevel, initEmailRemi
 
     const { error: dbErr } = await supabase
       .from('profiles')
-      .update({ name: trimmed, level, email_reminders: emailReminders, daily_goal: dailyGoal })
+      .update({ name: trimmed, level, email_reminders: emailReminders, weekly_summary_emails: weeklySummary, daily_goal: dailyGoal })
       .eq('id', userId);
 
     if (dbErr) {
@@ -107,40 +109,76 @@ export default function ProfileForm({ userId, initName, initLevel, initEmailRemi
         </div>
       </div>
 
-      {/* Email reminders toggle */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div
-            className="mt-0.5 w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-            style={{ background: emailReminders ? 'var(--peach)' : 'var(--bg-2)' }}
-          >
-            {emailReminders
-              ? <Bell className="w-4 h-4" style={{ color: 'var(--coral-ink)' }} />
-              : <BellOff className="w-4 h-4" style={{ color: 'var(--muted)' }} />
-            }
-          </div>
-          <div>
-            <p className="text-sm font-semibold" style={{ color: 'var(--ink-2)' }}>
-              Напомняния за серия
-            </p>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
-              Имейл, когато серията ти е в риск
-            </p>
-          </div>
-        </div>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={emailReminders}
-          onClick={() => setEmailReminders(v => !v)}
-          className="relative shrink-0 w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 cursor-pointer"
-          style={{ background: emailReminders ? 'var(--coral)' : 'var(--line)' }}
+      {/* Notification preferences */}
+      <div className="flex flex-col gap-3">
+        <p className="text-sm font-semibold" style={{ color: 'var(--ink-2)' }}>Известия по имейл</p>
+
+        {/* Streak reminder */}
+        <div
+          className="flex items-center justify-between gap-4 px-4 py-3 rounded-xl"
+          style={{ background: 'var(--bg-2)', border: '1px solid var(--line)' }}
         >
-          <span
-            className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform duration-200"
-            style={{ transform: emailReminders ? 'translateX(20px)' : 'translateX(0)' }}
-          />
-        </button>
+          <div className="flex items-center gap-3">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: emailReminders ? 'var(--peach)' : 'var(--bg)' }}
+            >
+              {emailReminders
+                ? <Bell className="w-4 h-4" style={{ color: 'var(--coral-ink)' }} />
+                : <BellOff className="w-4 h-4" style={{ color: 'var(--muted)' }} />
+              }
+            </div>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: 'var(--ink-2)' }}>Напомняне за серия</p>
+              <p className="text-xs" style={{ color: 'var(--muted)' }}>Имейл, когато серията е в риск</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={emailReminders}
+            onClick={() => setEmailReminders(v => !v)}
+            className="relative shrink-0 w-11 h-6 rounded-full transition-colors duration-200 cursor-pointer"
+            style={{ background: emailReminders ? 'var(--coral)' : 'var(--line)' }}
+          >
+            <span
+              className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform duration-200"
+              style={{ transform: emailReminders ? 'translateX(20px)' : 'translateX(0)' }}
+            />
+          </button>
+        </div>
+
+        {/* Weekly summary */}
+        <div
+          className="flex items-center justify-between gap-4 px-4 py-3 rounded-xl"
+          style={{ background: 'var(--bg-2)', border: '1px solid var(--line)' }}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: weeklySummary ? 'var(--lavender)' : 'var(--bg)' }}
+            >
+              <CalendarDays className="w-4 h-4" style={{ color: weeklySummary ? 'var(--lav-ink)' : 'var(--muted)' }} />
+            </div>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: 'var(--ink-2)' }}>Седмичен отчет</p>
+              <p className="text-xs" style={{ color: 'var(--muted)' }}>Обобщение на напредъка всеки понеделник</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={weeklySummary}
+            onClick={() => setWeeklySummary(v => !v)}
+            className="relative shrink-0 w-11 h-6 rounded-full transition-colors duration-200 cursor-pointer"
+            style={{ background: weeklySummary ? 'var(--lav-ink)' : 'var(--line)' }}
+          >
+            <span
+              className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform duration-200"
+              style={{ transform: weeklySummary ? 'translateX(20px)' : 'translateX(0)' }}
+            />
+          </button>
+        </div>
       </div>
 
       {/* Daily goal picker */}
