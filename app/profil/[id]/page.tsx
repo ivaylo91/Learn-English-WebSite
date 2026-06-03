@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
-import { ChevronLeft, Flame, Trophy, TrendingUp, Lock } from 'lucide-react';
+import { ChevronLeft, Flame, Trophy, TrendingUp, Lock, Settings } from 'lucide-react';
 import Badge from '@/components/ui/Badge';
 import { ACHIEVEMENT_META, DEFAULT_META } from '@/components/achievements/meta';
 import type { Metadata } from 'next';
@@ -52,8 +52,7 @@ export default async function PublicProfilePage({ params }: Props) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect(`/login?next=/profil/${id}`);
 
-  // If viewing own profile, redirect to the editable version
-  if (user.id === id) redirect('/profil');
+  const isOwnProfile = user.id === id;
 
   // Fetch public profile data
   const { data: profile } = await supabase
@@ -93,13 +92,24 @@ export default async function PublicProfilePage({ params }: Props) {
 
       {/* Back link */}
       <Link
-        href="/napredak/toplista"
+        href={isOwnProfile ? '/profil' : '/napredak/toplista'}
         className="inline-flex items-center gap-1.5 text-sm font-medium hover:underline mb-6"
         style={{ color: 'var(--coral)' }}
       >
         <ChevronLeft className="w-4 h-4" />
-        Класация
+        {isOwnProfile ? 'Профил' : 'Класация'}
       </Link>
+
+      {/* "How others see you" notice */}
+      {isOwnProfile && (
+        <div
+          className="flex items-center gap-3 px-4 py-3 rounded-2xl mb-6 text-sm"
+          style={{ background: 'var(--butter)', border: '1px solid #e8d8a8', color: 'var(--butter-ink)' }}
+        >
+          <span className="text-base">👁</span>
+          <span>Така те виждат другите потребители от класацията.</span>
+        </div>
+      )}
 
       {/* Identity card */}
       <div
@@ -116,6 +126,16 @@ export default async function PublicProfilePage({ params }: Props) {
             Учи от {joinDate}
           </p>
         </div>
+        {isOwnProfile && (
+          <Link
+            href="/profil"
+            className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:-translate-y-0.5 active:scale-[.98] cursor-pointer"
+            style={{ background: 'var(--coral-soft)', color: 'var(--coral-ink)', border: '1px solid #f4c8a8' }}
+          >
+            <Settings className="w-3.5 h-3.5" />
+            Редактирай
+          </Link>
+        )}
       </div>
 
       {/* Stats */}
