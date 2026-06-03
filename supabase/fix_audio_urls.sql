@@ -13,3 +13,11 @@ UPDATE public.listening_clips SET audio_url = '/api/audio/planning-a-trip-to-por
 UPDATE public.listening_clips SET audio_url = '/api/audio/a-job-interview'             WHERE title = 'A Job Interview';
 UPDATE public.listening_clips SET audio_url = '/api/audio/the-future-of-cities'        WHERE title = 'The Future of Cities';
 UPDATE public.listening_clips SET audio_url = '/api/audio/mindfulness-and-mental-health' WHERE title = 'Mindfulness and Mental Health';
+
+-- New B2/C1 clips (phase 65)
+UPDATE public.listening_clips SET audio_url = '/api/audio/social-media-regulation-debate'      WHERE title = 'The Social Media Regulation Debate';
+UPDATE public.listening_clips SET audio_url = '/api/audio/climate-change-economics'            WHERE title = 'Climate Change: The Economics';
+UPDATE public.listening_clips SET audio_url = '/api/audio/interview-on-artificial-intelligence' WHERE title = 'An Interview on Artificial Intelligence';
+UPDATE public.listening_clips SET audio_url = '/api/audio/what-can-we-know'                    WHERE title = 'What Can We Know?';
+UPDATE public.listening_clips SET audio_url = '/api/audio/rise-and-fall-of-rome'               WHERE title = 'The Rise and Fall of Rome';
+UPDATE public.listening_clips SET audio_url = '/api/audio/behavioural-economics'               WHERE title = 'Behavioural Economics and Decision-Making';
