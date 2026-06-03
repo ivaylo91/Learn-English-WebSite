@@ -183,6 +183,12 @@ supabase/seed_reading_extended.sql
 ```
 Run after `seed_reading.sql`. 8 more texts: My Family (A1); Food Around the World, A Typical School Day (A2); Social Media and Young People, The History of the Internet (B1); The Psychology of Happiness, Sustainable Fashion (B2); The Ethics of Artificial Intelligence (C1).
 
+### Reading texts — v3 B2/C1 (8 texts)
+```
+supabase/seed_reading_v3.sql
+```
+Run after `seed_reading_extended.sql`. 4 B2 texts: Urban Architecture and Human Behaviour, The Science of Memory, Media Literacy in the Digital Age, The Future of Work. 4 C1 texts: The Philosophy of Time, The Long Shadow of Colonialism, The Trolley Problem and Modern Ethics, The Neuroscience of Creativity. Each has full Markdown, 14–17 vocabulary words, and 5 questions. **Total after all reading seeds: 20 texts.**
+
 ### Writing exercises (25 exercises, A1–C1)
 ```
 supabase/seed_writing.sql
