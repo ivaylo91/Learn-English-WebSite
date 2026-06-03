@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import {
-  Menu, X, LogOut, TrendingUp, Search,
+  LogOut, TrendingUp, Search,
   Headphones, BookOpen, Pencil, ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -26,16 +26,6 @@ const practiceLinks = [
   { href: "/pisane",  label: "Писане",  icon: Pencil,     bg: "var(--butter)", color: "var(--butter-ink)" },
 ] as const;
 
-// All 6 links for the mobile hamburger menu (unchanged)
-const allMobileLinks = [
-  { href: "/rechnik",   label: "Речник"    },
-  { href: "/gramatika", label: "Граматика" },
-  { href: "/slusham",   label: "Слушане"   },
-  { href: "/chetene",   label: "Четене"    },
-  { href: "/pisane",    label: "Писане"    },
-  { href: "/napredak",  label: "Напредък"  },
-];
-
 // ── Avatar ────────────────────────────────────────────────────────────────────
 
 function UserAvatar({ name }: { name: string }) {
@@ -55,7 +45,6 @@ function UserAvatar({ name }: { name: string }) {
 export default function Navbar() {
   const pathname = usePathname();
   const router   = useRouter();
-  const [open,          setOpen]          = useState(false);
   const [searchOpen,    setSearchOpen]    = useState(false);
   const [practiceOpen,  setPracticeOpen]  = useState(false);
   const practiceRef = useRef<HTMLDivElement>(null);
@@ -242,60 +231,14 @@ export default function Navbar() {
           </div>
         )}
 
-        {/* Mobile search + hamburger */}
+        {/* Mobile — search + theme toggle (nav handled by BottomNav) */}
         <div className="md:hidden flex items-center gap-1">
           <button className="p-2 rounded-lg cursor-pointer" style={{ color: "var(--muted)" }} onClick={() => setSearchOpen(true)} aria-label="Търси">
             <Search className="w-5 h-5" />
           </button>
-          <button className="p-2 rounded-lg cursor-pointer" style={{ color: "var(--muted)" }} onClick={() => setOpen(!open)} aria-label="Меню">
-            {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+          <ThemeToggle />
         </div>
       </div>
-
-      {/* Mobile menu — all 6 links unchanged */}
-      {open && (
-        <div className="md:hidden px-4 py-4 flex flex-col gap-1" style={{ borderTop: "1px solid var(--line)", background: "var(--bg)" }}>
-          {allMobileLinks.map((link) => {
-            const active = pathname.startsWith(link.href);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setOpen(false)}
-                className="px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors cursor-pointer"
-                style={active ? { background: "var(--surface)", border: "1px solid var(--line)", color: "var(--ink)" } : { color: "var(--ink-2)" }}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-
-          <div className="pt-3 mt-2" style={{ borderTop: "1px solid var(--line)" }}>
-            {!user ? (
-              <div className="flex gap-2">
-                <Link href="/login" onClick={() => setOpen(false)} className="flex-1 text-center px-3 py-2.5 rounded-xl text-sm font-semibold cursor-pointer" style={{ border: "1px solid var(--line)", color: "var(--ink-2)", background: "var(--surface)" }}>Вход</Link>
-                <Link href="/register" onClick={() => setOpen(false)} className="flex-1 text-center px-3 py-2.5 rounded-xl text-sm font-bold text-white cursor-pointer" style={{ background: "var(--coral)" }}>Регистрация</Link>
-                <ThemeToggle />
-              </div>
-            ) : (
-              <div className="flex items-center justify-between px-1">
-                <Link href="/profil" onClick={() => setOpen(false)} className="flex items-center gap-2 cursor-pointer">
-                  <UserAvatar name={displayName} />
-                  <span className="text-sm font-medium" style={{ color: "var(--ink)" }}>{displayName}</span>
-                </Link>
-                <div className="flex items-center gap-1">
-                  <ThemeToggle />
-                  <button onClick={() => { setOpen(false); handleSignOut(); }} className="flex items-center gap-1.5 text-sm transition-colors cursor-pointer" style={{ color: "var(--muted)" }}>
-                    <LogOut className="w-4 h-4" />
-                    Изход
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
     </header>

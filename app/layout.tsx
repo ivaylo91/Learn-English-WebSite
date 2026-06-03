@@ -3,6 +3,7 @@ import { Bricolage_Grotesque, Manrope, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import BottomNav from "@/components/layout/BottomNav";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import ServiceWorkerProvider from "@/components/providers/ServiceWorkerProvider";
@@ -99,8 +100,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AuthProvider>
             <ServiceWorkerProvider />
             <Navbar />
-            <main className="flex-1">{children}</main>
+            <main className="flex-1 pb-16 md:pb-0">{children}</main>
             <Footer />
+            <BottomNav />
           </AuthProvider>
         </ThemeProvider>
       </body>
