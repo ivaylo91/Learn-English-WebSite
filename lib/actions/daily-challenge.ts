@@ -19,12 +19,12 @@ export async function getDailyChallenge(): Promise<DailyChallenge | null> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const day    = dayIndex();
-  const module = MODULES[day % MODULES.length];
+  const day             = dayIndex();
+  const challengeModule = MODULES[day % MODULES.length];
 
   let title = '', subtitle = '', href = '', contentId = '';
 
-  if (module === 'vocabulary') {
+  if (challengeModule === 'vocabulary') {
     const { count } = await supabase
       .from('vocabulary_words')
       .select('*', { count: 'exact', head: true });
@@ -37,7 +37,7 @@ export async function getDailyChallenge(): Promise<DailyChallenge | null> {
     if (!data) return null;
     title = data.word_en; subtitle = `${data.word_bg} · ${data.level}`; href = `/rechnik/${data.id}`; contentId = data.id;
 
-  } else if (module === 'grammar') {
+  } else if (challengeModule === 'grammar') {
     const { count } = await supabase
       .from('grammar_lessons')
       .select('*', { count: 'exact', head: true });
@@ -50,7 +50,7 @@ export async function getDailyChallenge(): Promise<DailyChallenge | null> {
     if (!data) return null;
     title = data.title; subtitle = `Граматика · ${data.level}`; href = `/gramatika/${data.slug}`; contentId = data.id;
 
-  } else if (module === 'listening') {
+  } else if (challengeModule === 'listening') {
     const { count } = await supabase
       .from('listening_clips')
       .select('*', { count: 'exact', head: true });
@@ -63,7 +63,7 @@ export async function getDailyChallenge(): Promise<DailyChallenge | null> {
     if (!data) return null;
     title = data.title; subtitle = `Слушане · ${data.level}`; href = `/slusham/${data.id}`; contentId = data.id;
 
-  } else if (module === 'reading') {
+  } else if (challengeModule === 'reading') {
     const { count } = await supabase
       .from('reading_texts')
       .select('*', { count: 'exact', head: true });
@@ -102,11 +102,11 @@ export async function getDailyChallenge(): Promise<DailyChallenge | null> {
     completed = !!done;
   }
 
-  return { module, title, subtitle, href, contentId, xpBonus: CHALLENGE_XP, completed };
+  return { module: challengeModule, title, subtitle, href, contentId, xpBonus: CHALLENGE_XP, completed };
 }
 
 export async function completeDailyChallenge(
-  module: string,
+  challengeModule: string,
   contentId: string,
 ): Promise<{ success: boolean; xpEarned: number }> {
   const supabase = await createClient();
@@ -117,7 +117,7 @@ export async function completeDailyChallenge(
 
   const { error } = await supabase
     .from('daily_challenge_completions')
-    .insert({ user_id: user.id, challenge_date: today, module, content_id: contentId, xp_earned: CHALLENGE_XP });
+    .insert({ user_id: user.id, challenge_date: today, module: challengeModule, content_id: contentId, xp_earned: CHALLENGE_XP });
 
   // Duplicate (already completed today) — not an error for the user
   if (error) return { success: false, xpEarned: 0 };
@@ -128,7 +128,7 @@ export async function completeDailyChallenge(
     p_module:  'daily_challenge',
     p_action:  'completed',
     p_xp:      CHALLENGE_XP,
-    p_meta:    { module, content_id: contentId },
+    p_meta:    { module: challengeModule, content_id: contentId },
   });
 
   return { success: true, xpEarned: CHALLENGE_XP };
