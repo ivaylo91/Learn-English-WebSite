@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { Play, Pause, RotateCcw, Volume2, ChevronDown, ChevronUp } from 'lucide-react';
+import TranscriptViewer from './TranscriptViewer';
 
 interface AudioPlayerProps {
   audioUrl: string;
@@ -183,16 +184,7 @@ export default function AudioPlayer({ audioUrl, transcript }: AudioPlayerProps) 
         </button>
         {showTranscript && (
           <div className="px-6 pb-6">
-            <pre
-              className="whitespace-pre-wrap text-sm leading-relaxed font-sans rounded-2xl p-5"
-              style={{
-                color: 'var(--ink-2)',
-                background: 'var(--bg-2)',
-                border: '1px solid var(--line)',
-              }}
-            >
-              {transcript.trim()}
-            </pre>
+            <TranscriptViewer transcript={transcript} />
           </div>
         )}
       </div>
