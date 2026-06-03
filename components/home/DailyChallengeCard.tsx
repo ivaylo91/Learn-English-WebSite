@@ -6,7 +6,8 @@ import {
   BookMarked, PenLine, Headphones, BookOpen, Pencil,
   Star, CheckCircle2, ArrowRight, Zap,
 } from 'lucide-react';
-import { completeDailyChallenge, type DailyChallenge } from '@/lib/actions/daily-challenge';
+import { completeDailyChallenge } from '@/lib/actions/daily-challenge';
+import type { DailyChallenge } from '@/lib/daily-challenge-utils';
 
 const MODULE_META = {
   vocabulary: { icon: BookMarked, bg: 'var(--coral-soft)', color: 'var(--coral-ink)', label: 'Речник' },

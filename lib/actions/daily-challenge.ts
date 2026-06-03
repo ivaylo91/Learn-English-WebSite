@@ -1,12 +1,12 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { CHALLENGE_XP, type ChallengeModule, type DailyChallenge } from '@/lib/daily-challenge-utils';
 
-const MODULES = ['vocabulary', 'grammar', 'listening', 'reading', 'writing'] as const;
-export type ChallengeModule = typeof MODULES[number];
-export const CHALLENGE_XP = 25;
+export type { ChallengeModule, DailyChallenge };
 
-// Stable integer that increments once per UTC day
+const MODULES: ChallengeModule[] = ['vocabulary', 'grammar', 'listening', 'reading', 'writing'];
+
 function dayIndex() {
   return Math.floor(Date.now() / 86_400_000);
 }
@@ -14,16 +14,6 @@ function dayIndex() {
 function todayUTC() {
   return new Date().toISOString().slice(0, 10);
 }
-
-export type DailyChallenge = {
-  module:    ChallengeModule;
-  title:     string;
-  subtitle:  string;
-  href:      string;
-  contentId: string;
-  xpBonus:   number;
-  completed: boolean;
-};
 
 export async function getDailyChallenge(): Promise<DailyChallenge | null> {
   const supabase = await createClient();
