@@ -7,6 +7,7 @@ import StreakProtectionBanner from '@/components/StreakProtectionBanner';
 import AchievementShelf from '@/components/achievements/AchievementShelf';
 import DailyGoalCard from '@/components/goals/DailyGoalCard';
 import ShareCard from '@/components/napredak/ShareCard';
+import CertificateSection from '@/components/napredak/CertificateSection';
 import WeakAreasCard, { type WeakItem } from '@/components/napredak/WeakAreasCard';
 import XpChart, { type DayXp } from '@/components/napredak/XpChart';
 import { checkAndUnlockAchievements } from '@/lib/actions/achievements';
@@ -343,6 +344,12 @@ export default async function NapredakPage() {
 
       {/* Weak areas — all modules needing practice */}
       <WeakAreasCard items={allWeakItems} />
+
+      {/* Certificates */}
+      <CertificateSection
+        xp={profile?.xp ?? 0}
+        name={profile?.name?.trim() || 'Потребител'}
+      />
 
       {/* Share card */}
       <ShareCard
