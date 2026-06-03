@@ -7,6 +7,7 @@ import StreakProtectionBanner from '@/components/StreakProtectionBanner';
 import AchievementShelf from '@/components/achievements/AchievementShelf';
 import DailyGoalCard from '@/components/goals/DailyGoalCard';
 import ShareCard from '@/components/napredak/ShareCard';
+import WeakAreasCard, { type WeakLesson } from '@/components/napredak/WeakAreasCard';
 import XpChart, { type DayXp } from '@/components/napredak/XpChart';
 import { checkAndUnlockAchievements } from '@/lib/actions/achievements';
 import { checkAndLogDailyGoal } from '@/lib/actions/goals';
@@ -84,6 +85,7 @@ export default async function NapredakPage() {
     activityDatesRes,
     todayActivityRes,
     xpActivityRes,
+    weakAreasRes,
   ] = await Promise.all([
     supabase.from('profiles').select('name, xp, streak, level, last_active_at, daily_goal').eq('id', user.id).single(),
     supabase.from('vocabulary_words').select('id', { count: 'exact', head: true }),
@@ -122,6 +124,14 @@ export default async function NapredakPage() {
       .gt('xp_gained', 0)
       .gte('created_at', new Date(Date.now() - 30 * 86_400_000).toISOString())
       .order('created_at', { ascending: true }),
+    // Lessons with score < 60% — shown in weak areas card
+    supabase
+      .from('user_lesson_progress')
+      .select('lesson_id, score, attempts, grammar_lessons(title, level, slug, category)')
+      .eq('user_id', user.id)
+      .lt('score', 60)
+      .order('score', { ascending: true })
+      .limit(5),
   ]);
 
   // Unique activity dates (YYYY-MM-DD, UTC) for streak calendar
@@ -178,6 +188,18 @@ export default async function NapredakPage() {
     return { date, xp: xpByDay[date] ?? 0, isToday: date === todayUTCStr };
   });
   const chartTotal = Object.values(xpByDay).reduce((s, v) => s + v, 0);
+
+  // Weak areas — lessons with score < 60%
+  const weakLessons: WeakLesson[] = (weakAreasRes.data ?? [])
+    .filter((r): r is typeof r & { grammar_lessons: NonNullable<typeof r.grammar_lessons> } =>
+      r.grammar_lessons !== null
+    )
+    .map(r => ({
+      lesson_id: r.lesson_id,
+      score:     r.score as number,
+      attempts:  (r.attempts as number | null) ?? 1,
+      lesson:    r.grammar_lessons as WeakLesson['lesson'],
+    }));
 
   const dailyGoal      = ((profile?.daily_goal ?? 'standard') as DailyGoal);
   const todayProgress  = computeTodayProgress(
@@ -262,6 +284,9 @@ export default async function NapredakPage() {
           </div>
         ))}
       </div>
+
+      {/* Weak areas — lessons needing practice */}
+      <WeakAreasCard lessons={weakLessons} />
 
       {/* Share card */}
       <ShareCard

@@ -83,6 +83,17 @@ export default async function LessonPage({ params }: Props) {
     'use server';
     if (!user) return;
     const sb = await createClient();
+
+    // Fetch current attempt count so we can increment it atomically
+    const { data: existing } = await sb
+      .from('user_lesson_progress')
+      .select('attempts')
+      .eq('user_id', user.id)
+      .eq('lesson_id', lesson.id)
+      .maybeSingle();
+
+    const attempts = (existing?.attempts ?? 0) + 1;
+
     await sb.from('user_lesson_progress').upsert(
       {
         user_id:      user.id,
@@ -90,6 +101,7 @@ export default async function LessonPage({ params }: Props) {
         score,
         completed:    score >= 60,
         completed_at: score >= 60 ? new Date().toISOString() : null,
+        attempts,
       },
       { onConflict: 'user_id,lesson_id' }
     );
